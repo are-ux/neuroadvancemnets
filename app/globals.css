@@ -1,0 +1,136 @@
+@import "tailwindcss";
+
+/* ------------------------------------------------------------------
+   NeuroAdvancements design tokens
+   Colours are sampled from the supplied logo. Spacing uses only the
+   Tailwind steps 0, 0.5, 1, 2, 3, 4, 6, 8, 10, 12, 16, 20, 24.
+------------------------------------------------------------------- */
+@theme {
+  --color-navy: #001a38;
+  --color-slate: #142f4c;
+  --color-orange: #fc6a01;
+  --color-orange-soft: #ff8a33;
+  --color-soft: #f7f9fc;
+  --color-ice: #dde8f1;
+  --color-white: #ffffff;
+
+  --font-sans: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
+
+  --ease-settle: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background: var(--color-soft);
+  color: var(--color-navy);
+  font-family: var(--font-sans);
+  font-style: normal;
+}
+
+h1, h2, h3, h4 { text-wrap: balance; }
+p, li, figcaption, label { text-wrap: pretty; }
+em, i, cite, address { font-style: normal; }
+
+[id] { scroll-margin-top: 96px; }
+
+:focus-visible {
+  outline: 2px solid var(--color-orange);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ---------------- Named text styles (skill B1) ---------------- */
+@utility heading-1 { font-size: 3.75rem; line-height: 1; font-weight: 600; letter-spacing: -0.02em; }
+@utility heading-2 { font-size: 3rem; line-height: 1; font-weight: 600; letter-spacing: -0.02em; }
+@utility heading-3 { font-size: 2.25rem; line-height: 2.5rem; font-weight: 600; letter-spacing: -0.02em; }
+@utility heading-4 { font-size: 1.875rem; line-height: 2.25rem; font-weight: 600; letter-spacing: -0.01em; }
+@utility heading-5 { font-size: 1.5rem; line-height: 2rem; font-weight: 600; letter-spacing: -0.01em; }
+@utility heading-6 { font-size: 1.25rem; line-height: 1.75rem; font-weight: 600; }
+@utility title-1 { font-size: 1.25rem; line-height: 1.75rem; font-weight: 500; }
+@utility title-2 { font-size: 1.125rem; line-height: 1.75rem; font-weight: 500; }
+@utility title-3 { font-size: 1rem; line-height: 1.5rem; font-weight: 500; }
+@utility title-4 { font-size: 0.875rem; line-height: 1.25rem; font-weight: 500; }
+@utility title-5 { font-size: 0.75rem; line-height: 1rem; font-weight: 500; }
+@utility body-1 { font-size: 1rem; line-height: 1.5rem; font-weight: 600; }
+@utility body-2 { font-size: 1rem; line-height: 1.5rem; font-weight: 500; }
+@utility body-3 { font-size: 1rem; line-height: 1.5rem; font-weight: 400; }
+@utility body-4 { font-size: 0.875rem; line-height: 1.25rem; font-weight: 600; }
+@utility body-5 { font-size: 0.875rem; line-height: 1.25rem; font-weight: 500; }
+@utility body-6 { font-size: 0.875rem; line-height: 1.25rem; font-weight: 400; }
+@utility button-lg { font-size: 1.125rem; line-height: 1.75rem; font-weight: 600; }
+@utility button-md { font-size: 1rem; line-height: 1.5rem; font-weight: 600; }
+@utility button-sm { font-size: 0.875rem; line-height: 1.25rem; font-weight: 600; }
+@utility button-xsm { font-size: 0.75rem; line-height: 1rem; font-weight: 600; }
+@utility caption-1 { font-size: 0.875rem; line-height: 1.25rem; font-weight: 500; }
+@utility caption-2 { font-size: 0.875rem; line-height: 1.25rem; font-weight: 400; }
+@utility caption-3 { font-size: 0.75rem; line-height: 1rem; font-weight: 600; }
+@utility caption-4 { font-size: 0.75rem; line-height: 1rem; font-weight: 500; }
+@utility caption-5 { font-size: 0.75rem; line-height: 1rem; font-weight: 400; }
+
+/* Page gutter and measure */
+@utility shell {
+  width: 100%;
+  max-width: 1200px;
+  margin-inline: auto;
+  padding-inline: 16px;
+  @media (min-width: 768px) { padding-inline: 32px; }
+}
+
+/* Hero heading gradients: the only gradients on the site, text only (skill B5). */
+@utility hero-ink-dark {
+  background-image: linear-gradient(90deg, #ffffff, #9b9b9b);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* ---------------- Motion (skill B7) ---------------- */
+@utility motion-settle {
+  transition-timing-function: var(--ease-settle);
+  transition-duration: 500ms;
+}
+@utility motion-hover {
+  transition-timing-function: var(--ease-settle);
+  transition-duration: 300ms;
+}
+
+.reveal {
+  opacity: 0;
+  transform: translateY(32px);
+  transition: opacity 700ms var(--ease-settle), transform 700ms var(--ease-settle);
+  transition-delay: var(--reveal-delay, 0ms);
+}
+.reveal.is-in { opacity: 1; transform: none; }
+
+.tagline-word {
+  opacity: 0.3;
+  transition: opacity 700ms var(--ease-settle);
+}
+.tagline-word.is-in { opacity: 1; }
+
+.menu-link {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 500ms var(--ease-settle), transform 500ms var(--ease-settle);
+}
+.menu-open .menu-link { opacity: 1; transform: none; transition-delay: var(--link-delay, 0ms); }
+
+.skeleton {
+  animation: skeleton-pulse 1600ms var(--ease-settle) infinite alternate;
+}
+@keyframes skeleton-pulse {
+  from { opacity: 0.35; }
+  to { opacity: 0.8; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .reveal { transform: none; }
+  .menu-link { transform: none; }
+  .tagline-word { opacity: 1; transition: none; }
+  .skeleton { animation: none; opacity: 0.5; }
+}
