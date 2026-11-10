@@ -39,7 +39,7 @@ export function Podcast() {
 
   return (
     <section id="podcast" aria-labelledby="podcast-title" className="px-4 py-10 md:px-8 lg:py-12">
-      <div ref={nearRef} className="mx-auto max-w-[1200px] overflow-hidden rounded-3xl bg-navy text-white">
+      <div ref={nearRef} className="mx-auto max-w-[1200px] overflow-hidden on-dark rounded-3xl bg-night text-white">
         <div className="grid lg:grid-cols-12 lg:items-center">
           <Reveal className="flex flex-col gap-4 p-6 md:p-12 lg:col-span-6 lg:p-16">
             <p className="flex items-center gap-2 caption-1 text-ice">

@@ -14,7 +14,11 @@ export type LobeId = "frontal" | "parietal" | "temporal" | "occipital";
 /** Order matches the COLOR_0 channels written into the model. */
 export const LOBE_CHANNELS: readonly LobeId[] = ["frontal", "parietal", "temporal", "occipital"];
 
-export type BrainView = { azimuth: number; elevation: number; zoom: number };
+/**
+ * x and y place the brain on wide screens, as fractions of the viewport
+ * measured from its centre (x right, y up). Narrow screens use a fixed anchor.
+ */
+export type BrainView = { azimuth: number; elevation: number; zoom: number; x: number; y: number };
 
 export type BrainChapter = {
   id: string;
@@ -30,7 +34,8 @@ export type BrainChapter = {
   view: BrainView;
 };
 
-export const heroView: BrainView = { azimuth: -128, elevation: 12, zoom: 1 };
+/** Cover composition: the brain large and centred above the headline. */
+export const heroView: BrainView = { azimuth: -120, elevation: 10, zoom: 1.06, x: 0.02, y: 0.09 };
 
 export const brainChapters: readonly BrainChapter[] = [
   {
@@ -42,7 +47,7 @@ export const brainChapters: readonly BrainChapter[] = [
     location: "The front of each hemisphere, ahead of the central sulcus.",
     highlight: "frontal",
     activity: 0,
-    view: { azimuth: -108, elevation: 8, zoom: 1.04 },
+    view: { azimuth: -108, elevation: 8, zoom: 1.04, x: 0.21, y: 0 },
   },
   {
     id: "temporal-lobe",
@@ -53,7 +58,7 @@ export const brainChapters: readonly BrainChapter[] = [
     location: "Along the side of each hemisphere, below the lateral sulcus.",
     highlight: "temporal",
     activity: 0,
-    view: { azimuth: -90, elevation: -10, zoom: 1.04 },
+    view: { azimuth: -90, elevation: -10, zoom: 1.04, x: 0.21, y: 0 },
   },
   {
     id: "parietal-lobe",
@@ -63,7 +68,7 @@ export const brainChapters: readonly BrainChapter[] = [
     location: "Behind the central sulcus, above the temporal lobe.",
     highlight: "parietal",
     activity: 0,
-    view: { azimuth: -64, elevation: 30, zoom: 1.04 },
+    view: { azimuth: -64, elevation: 30, zoom: 1.04, x: 0.21, y: 0 },
   },
   {
     id: "occipital-lobe",
@@ -73,7 +78,7 @@ export const brainChapters: readonly BrainChapter[] = [
     location: "The back of each hemisphere.",
     highlight: "occipital",
     activity: 0,
-    view: { azimuth: -32, elevation: 10, zoom: 1.04 },
+    view: { azimuth: -32, elevation: 10, zoom: 1.04, x: 0.21, y: 0 },
   },
   {
     id: "complete-brain",
@@ -83,7 +88,7 @@ export const brainChapters: readonly BrainChapter[] = [
       "No lobe works alone. Thought, memory, and perception arise from networks that span the whole brain.",
     highlight: null,
     activity: 1,
-    view: { azimuth: -58, elevation: 20, zoom: 0.96 },
+    view: { azimuth: -58, elevation: 20, zoom: 0.96, x: 0.21, y: 0 },
   },
 ];
 

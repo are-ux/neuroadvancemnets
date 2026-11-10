@@ -16,18 +16,18 @@ export default function OpenGraphImage() {
           flexDirection: "column",
           justifyContent: "space-between",
           padding: 80,
-          background: "#001A38",
+          background: "#101A26",
           color: "#FFFFFF",
           fontFamily: "sans-serif",
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: 16, fontSize: 32, fontWeight: 600 }}>
-          <div style={{ width: 20, height: 20, borderRadius: 20, background: "#FC6A01" }} />
+          <div style={{ width: 20, height: 20, borderRadius: 20, background: "#E47B36" }} />
           NeuroAdvancements
         </div>
         <div style={{ display: "flex", flexDirection: "column", fontSize: 84, fontWeight: 600, lineHeight: 1.05, letterSpacing: -2 }}>
           <span>Understanding the brain.</span>
-          <span style={{ color: "#DDE8F1" }}>Exploring what&rsquo;s next.</span>
+          <span style={{ color: "#9EAEBB" }}>Exploring what&rsquo;s next.</span>
         </div>
       </div>
     ),

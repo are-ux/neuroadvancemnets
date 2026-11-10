@@ -26,7 +26,7 @@ export const metadata: Metadata = {
   twitter: { card: "summary_large_image", title: site.title, description: site.description },
 };
 
-export const viewport: Viewport = { themeColor: "#001a38" };
+export const viewport: Viewport = { themeColor: "#f7f8f6" };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (

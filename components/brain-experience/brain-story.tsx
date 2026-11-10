@@ -4,7 +4,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Hero } from "@/components/hero/hero";
 import { Reveal } from "@/components/ui/reveal";
 import { brainChapters, modelCredit } from "@/lib/content/brain-chapters";
-import { useReducedMotion } from "@/lib/animations/hooks";
+import { useInView, useReducedMotion } from "@/lib/animations/hooks";
+import { TONE_BAND_MARGIN } from "@/lib/design-tokens";
 import { positionFromScroll } from "@/lib/animations/story-timeline";
 import { BrainStage } from "./brain-stage";
 
@@ -30,10 +31,21 @@ export function BrainStory() {
   const [inView, setInView] = useState(true);
   const [activeStop, setActiveStop] = useState(0);
   const activeRef = useRef(0);
+  const heroFade = useRef(1);
   const reducedMotion = useReducedMotion();
+  // The story dims from paper to night when this zone reaches the navigation, which watches the same zone.
+  const [zoneRef, dark] = useInView<HTMLDivElement>({ once: false, rootMargin: TONE_BAND_MARGIN });
 
   const getPosition = useCallback(() => {
     const position = positionFromScroll(window.scrollY + window.innerHeight / 2, centres.current);
+    // The cover copy clears the stage before the brain travels across it. Written only when it changes.
+    const fade = Math.round(Math.min(1, Math.max(0, 1 - (position - 0.04) / 0.22)) * 50) / 50;
+    const hero = stopRefs.current[0];
+    if (hero && fade !== heroFade.current) {
+      heroFade.current = fade;
+      hero.style.opacity = String(fade);
+      hero.style.pointerEvents = fade < 0.1 ? "none" : "";
+    }
     const nearest = Math.round(position);
     if (nearest !== activeRef.current) {
       activeRef.current = nearest;
@@ -68,7 +80,8 @@ export function BrainStory() {
   }, [getPosition]);
 
   return (
-    <section ref={sectionRef} id="home" className="relative bg-navy text-white">
+    <section ref={sectionRef} id="home" data-tone={dark ? "dark" : "light"} className="story relative">
+      <div ref={zoneRef} data-nav-tone="dark" aria-hidden="true" className="pointer-events-none absolute inset-x-0 bottom-0 top-[92svh]" />
       {/* Copy layer, in normal flow. */}
       <div className="relative">
         <Hero
@@ -90,15 +103,15 @@ export function BrainStory() {
             >
               <div className="shell pb-10 lg:pb-0">
                 <Reveal className="flex max-w-md flex-col items-start gap-4">
-                  <p className="flex items-center gap-3 caption-1 text-ice">
-                    <span className="tabular-nums text-orange">{String(i + 1).padStart(2, "0")}</span>
-                    <span aria-hidden="true" className="h-px w-8 bg-ice/40" />
+                  <p className="flex items-center gap-3 caption-1 story-body">
+                    <span className="tabular-nums story-faint">{String(i + 1).padStart(2, "0")}</span>
+                    <span aria-hidden="true" className="story-rule h-px w-8" />
                     {chapter.label}
                   </p>
-                  <h3 className="heading-4 text-white lg:heading-3">{chapter.heading}</h3>
-                  <p className="body-3 text-ice lg:title-2">{chapter.description}</p>
-                  {chapter.location && <p className="caption-2 text-ice/70">{chapter.location}</p>}
-                  {i === brainChapters.length - 1 && <p className="caption-5 text-ice/60">{modelCredit}</p>}
+                  <h3 className="heading-4 story-ink lg:heading-3">{chapter.heading}</h3>
+                  <p className="body-3 story-body lg:title-2">{chapter.description}</p>
+                  {chapter.location && <p className="caption-2 story-faint">{chapter.location}</p>}
+                  {i === brainChapters.length - 1 && <p className="caption-5 story-faint">{modelCredit}</p>}
                 </Reveal>
               </div>
             </article>
@@ -113,7 +126,7 @@ export function BrainStory() {
       */}
       <div className="pointer-events-none absolute inset-0">
         <div className="sticky top-0 h-lvh overflow-hidden">
-          <div className="absolute inset-x-0 top-0 h-[46%] bg-navy lg:hidden" />
+          <div className="story-bg absolute inset-x-0 top-0 h-[46%] lg:hidden" />
           <BrainStage getPosition={getPosition} active={inView} reducedMotion={reducedMotion} />
 
           <nav
@@ -132,7 +145,7 @@ export function BrainStory() {
                     >
                       <span
                         className={`caption-4 transition-opacity motion-hover ${
-                          current ? "text-white opacity-100" : "text-ice opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100"
+                          current ? "story-ink opacity-100" : "story-body opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100"
                         }`}
                       >
                         {label}
@@ -140,7 +153,7 @@ export function BrainStory() {
                       <span
                         aria-hidden="true"
                         className={`size-2 rounded-full transition-[background-color,transform] motion-settle ${
-                          current ? "scale-150 bg-orange" : "bg-ice/40 group-hover:bg-ice"
+                          current ? "story-ink scale-150 bg-current" : "story-rule"
                         }`}
                       />
                     </a>

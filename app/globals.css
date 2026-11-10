@@ -1,17 +1,30 @@
 @import "tailwindcss";
 
 /* ------------------------------------------------------------------
-   NeuroAdvancements design tokens
-   Colours are sampled from the supplied logo. Spacing uses only the
-   Tailwind steps 0, 0.5, 1, 2, 3, 4, 6, 8, 10, 12, 16, 20, 24.
+   NeuroAdvancements design tokens (revision 2)
+
+   The interface is paper, pearl, and ink. Orange is an occasional
+   accent, not a UI colour: it is reserved for anatomy and for the
+   single point of emphasis in a composition.
+
+   Token names are kept from revision 1 so existing components pick
+   up the new palette:
+     soft  = primary background     navy  = text and primary CTA
+     ice   = secondary surface      slate = secondary text
+     mist  = supporting detail      night = immersive sections
+
+   Spacing uses only the Tailwind steps 0, 0.5, 1, 2, 3, 4, 6, 8, 10,
+   12, 16, 20, 24.
 ------------------------------------------------------------------- */
 @theme {
-  --color-navy: #001a38;
-  --color-slate: #142f4c;
-  --color-orange: #fc6a01;
-  --color-orange-soft: #ff8a33;
-  --color-soft: #f7f9fc;
-  --color-ice: #dde8f1;
+  --color-soft: #f7f8f6;
+  --color-ice: #e9edf0;
+  --color-navy: #172a3e;
+  --color-slate: #3f5165;
+  --color-mist: #9eaebb;
+  --color-orange: #e47b36;
+  --color-orange-soft: #ec9459;
+  --color-night: #101a26;
   --color-white: #ffffff;
 
   --font-sans: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
@@ -38,10 +51,12 @@ em, i, cite, address { font-style: normal; }
 [id] { scroll-margin-top: 96px; }
 
 :focus-visible {
-  outline: 2px solid var(--color-orange);
+  outline: 2px solid var(--color-navy);
   outline-offset: 2px;
   border-radius: 4px;
 }
+.story[data-tone="dark"] :focus-visible,
+.on-dark :focus-visible { outline-color: var(--color-soft); }
 
 /* ---------------- Named text styles (skill B1) ---------------- */
 @utility heading-1 { font-size: 3.75rem; line-height: 1; font-weight: 600; letter-spacing: -0.02em; }
@@ -80,9 +95,9 @@ em, i, cite, address { font-style: normal; }
   @media (min-width: 768px) { padding-inline: 32px; }
 }
 
-/* Hero heading gradients: the only gradients on the site, text only (skill B5). */
-@utility hero-ink-dark {
-  background-image: linear-gradient(90deg, #ffffff, #9b9b9b);
+/* Hero heading: the only gradient on the site, on text only (skill B5), in brand ink. */
+@utility hero-ink {
+  background-image: linear-gradient(90deg, #172a3e, #6b7c8d);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -96,6 +111,76 @@ em, i, cite, address { font-style: normal; }
 @utility motion-hover {
   transition-timing-function: var(--ease-settle);
   transition-duration: 300ms;
+}
+
+/* ---------------- Glass navigation ----------------
+   A thin tint over a strong blur, so the page stays visible through it.
+   A bright inner edge and a soft drop shadow give it thickness.
+   Over dark sections the tint thickens to frosted glass: the logo is
+   never recoloured, so its navy wordmark needs a light surface. */
+.glass {
+  background-color: rgb(255 255 255 / 0.4);
+  -webkit-backdrop-filter: blur(20px) saturate(1.6);
+  backdrop-filter: blur(20px) saturate(1.6);
+  border: 1px solid rgb(23 42 62 / 0.08);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.75),
+    0 1px 2px rgb(23 42 62 / 0.04),
+    0 16px 32px -20px rgb(23 42 62 / 0.28);
+  transition:
+    background-color 700ms var(--ease-settle),
+    border-color 700ms var(--ease-settle),
+    box-shadow 700ms var(--ease-settle);
+}
+.glass[data-tone="dark"] {
+  background-color: rgb(233 237 240 / 0.7);
+  border-color: rgb(255 255 255 / 0.3);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.55),
+    0 1px 2px rgb(0 0 0 / 0.2),
+    0 20px 40px -20px rgb(0 0 0 / 0.6);
+}
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .glass { background-color: rgb(247 248 246 / 0.94); }
+}
+
+/* ---------------- Brain story tones ----------------
+   The story opens on paper and dims to night as the anatomy chapters
+   arrive. Colours are variables so copy and background change together. */
+.story {
+  --story-bg: var(--color-soft);
+  --story-ink: var(--color-navy);
+  --story-body: var(--color-slate);
+  --story-faint: #6b7c8d;
+  --story-rule: rgb(23 42 62 / 0.18);
+  --story-skeleton: var(--color-ice);
+  background-color: var(--story-bg);
+  transition: background-color 900ms var(--ease-settle);
+}
+.story[data-tone="dark"] {
+  --story-bg: var(--color-night);
+  --story-ink: #f7f8f6;
+  --story-body: #c7d0d8;
+  --story-faint: var(--color-mist);
+  --story-rule: rgb(255 255 255 / 0.22);
+  --story-skeleton: #1b2836;
+}
+.story-bg { background-color: var(--story-bg); transition: background-color 900ms var(--ease-settle); }
+.story-ink { color: var(--story-ink); transition: color 900ms var(--ease-settle); }
+.story-body { color: var(--story-body); transition: color 900ms var(--ease-settle); }
+.story-faint { color: var(--story-faint); transition: color 900ms var(--ease-settle); }
+.story-rule { background-color: var(--story-rule); transition: background-color 900ms var(--ease-settle); }
+.story-skeleton { background-color: var(--story-skeleton); }
+
+/* Hero entry: each line settles into place once, on load. Pure CSS, so it needs no script. */
+.hero-in {
+  opacity: 0;
+  transform: translateY(24px);
+  animation: hero-in 1000ms var(--ease-settle) forwards;
+  animation-delay: var(--d, 0ms);
+}
+@keyframes hero-in {
+  to { opacity: 1; transform: none; }
 }
 
 .reveal {
@@ -133,4 +218,6 @@ em, i, cite, address { font-style: normal; }
   .menu-link { transform: none; }
   .tagline-word { opacity: 1; transition: none; }
   .skeleton { animation: none; opacity: 0.5; }
+  .hero-in { animation: hero-fade 600ms var(--ease-settle) forwards; transform: none; }
+  @keyframes hero-fade { to { opacity: 1; } }
 }

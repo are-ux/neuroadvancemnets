@@ -90,7 +90,7 @@ export function SignupForm({ list, submitLabel, tone = "light", className = "" }
             dark ? "text-white placeholder:text-ice/50" : "text-navy placeholder:text-slate/50"
           }`}
         />
-        <button type="submit" disabled={loading} className={buttonClass("primary", "md")}>
+        <button type="submit" disabled={loading} className={buttonClass(dark ? "inverse" : "primary", "md")}>
           {loading ? <span className="skeleton">Sending</span> : submitLabel}
         </button>
       </div>

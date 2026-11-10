@@ -44,9 +44,9 @@ function Bars({ animate }: { animate: boolean }) {
   useLayoutEffect(() => {
     const mesh = ref.current;
     if (!mesh) return;
-    const front = new THREE.Color(colors.ice);
+    const front = new THREE.Color(colors.surface);
     const back = new THREE.Color("#35557A");
-    const accent = new THREE.Color(colors.orange);
+    const accent = new THREE.Color(colors.accent);
     const c = new THREE.Color();
     for (let row = 0; row < ROWS; row++) {
       for (let i = 0; i < BARS; i++) {

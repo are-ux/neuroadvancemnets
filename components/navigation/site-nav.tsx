@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useEffect, useState, type CSSProperties } from "react";
 import { buttonClass } from "@/components/ui/button";
 import { consultationLink, navItems } from "@/lib/content/site";
+import { TONE_BAND_MARGIN } from "@/lib/design-tokens";
 
 const observed = [...navItems.map((n) => n.section), consultationLink.section];
 
@@ -26,9 +27,53 @@ function useActiveSection() {
   return active;
 }
 
+/** True while any element marked data-nav-tone="dark" sits under the navigation. */
+function useDarkBackdrop() {
+  const [dark, setDark] = useState(false);
+  useEffect(() => {
+    const zones = Array.from(document.querySelectorAll('[data-nav-tone="dark"]'));
+    if (!zones.length) return;
+    const under = new Set<Element>();
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) under.add(entry.target);
+          else under.delete(entry.target);
+        }
+        setDark(under.size > 0);
+      },
+      { rootMargin: TONE_BAND_MARGIN },
+    );
+    zones.forEach((zone) => io.observe(zone));
+    return () => io.disconnect();
+  }, []);
+  return dark;
+}
+
+/**
+ * The supplied logo, never recoloured. Rendered at its display size so the
+ * browser receives a file close to the pixels it paints, which keeps it sharp.
+ * Source artwork is 960 x 195 (ratio 4.92).
+ */
+function Logo({ height }: { height: 28 | 32 }) {
+  const width = Math.round((height * 960) / 195);
+  return (
+    <Image
+      src="/brand/logo.png"
+      alt="NeuroAdvancements"
+      width={width}
+      height={height}
+      quality={95}
+      priority
+      style={{ width, height }}
+    />
+  );
+}
+
 export function SiteNav() {
   const [open, setOpen] = useState(false);
   const active = useActiveSection();
+  const dark = useDarkBackdrop();
 
   useEffect(() => {
     if (!open) return;
@@ -49,13 +94,25 @@ export function SiteNav() {
 
   return (
     <header className={open ? "menu-open" : ""}>
-      <div className="pointer-events-none fixed inset-x-0 top-4 z-50 flex justify-center px-4">
+      {/* The bar spans the page grid, so the logo and the action align with the content below it. */}
+      <div className="pointer-events-none fixed inset-x-0 top-3 z-50 px-3 md:top-4 md:px-6">
         <nav
           aria-label="Main"
-          className="pointer-events-auto flex w-full items-center justify-between gap-6 rounded-2xl border border-navy/10 bg-white/80 py-2 pl-4 pr-2 backdrop-blur-md lg:w-auto"
+          data-tone={dark && !open ? "dark" : "light"}
+          className="glass pointer-events-auto mx-auto flex h-16 max-w-[1184px] items-center justify-between gap-4 rounded-2xl pl-4 pr-3 lg:grid lg:grid-cols-[1fr_auto_1fr] lg:pl-6"
         >
-          <Link href="/#home" aria-label="NeuroAdvancements home" className="rounded-lg" onClick={() => setOpen(false)}>
-            <Image src="/brand/logo.png" alt="NeuroAdvancements" width={960} height={195} priority className="h-6 w-auto" />
+          <Link
+            href="/#home"
+            aria-label="NeuroAdvancements home"
+            className="justify-self-start rounded-lg py-2"
+            onClick={() => setOpen(false)}
+          >
+            <span className="hidden sm:block">
+              <Logo height={32} />
+            </span>
+            <span className="sm:hidden">
+              <Logo height={28} />
+            </span>
           </Link>
 
           <ul className="hidden items-center gap-1 lg:flex">
@@ -66,26 +123,21 @@ export function SiteNav() {
                   <Link
                     href={item.href}
                     aria-current={current ? "true" : undefined}
-                    className={`relative block rounded-lg px-3 py-2 title-4 transition-colors motion-hover hover:bg-navy/5 ${
-                      current ? "text-navy" : "text-slate/80 hover:text-navy"
+                    className={`block rounded-lg px-3 py-2 title-4 transition-colors motion-hover ${
+                      current ? "bg-navy/[0.07] text-navy" : "text-slate hover:bg-navy/[0.04] hover:text-navy"
                     }`}
                   >
                     {item.label}
-                    <span
-                      aria-hidden="true"
-                      className={`absolute bottom-0.5 left-1/2 size-1 -translate-x-1/2 rounded-full bg-orange transition-opacity motion-hover ${
-                        current ? "opacity-100" : "opacity-0"
-                      }`}
-                    />
                   </Link>
                 </li>
               );
             })}
           </ul>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 justify-self-end">
             <Link
               href={consultationLink.href}
+              aria-current={active === consultationLink.section ? "true" : undefined}
               className={buttonClass("primary", "sm", "hidden sm:inline-flex")}
               onClick={() => setOpen(false)}
             >
@@ -121,10 +173,11 @@ export function SiteNav() {
                 href={item.href}
                 aria-current={active === item.section ? "true" : undefined}
                 onClick={() => setOpen(false)}
-                className="flex items-center gap-3 rounded-lg px-3 py-2 heading-4 text-navy transition-colors motion-hover hover:bg-navy/5"
+                className={`block rounded-lg px-3 py-2 heading-4 transition-colors motion-hover hover:bg-navy/5 ${
+                  active === item.section ? "text-navy" : "text-slate"
+                }`}
               >
                 {item.label}
-                {active === item.section && <span aria-hidden="true" className="size-2 rounded-full bg-orange" />}
               </Link>
             </li>
           ))}

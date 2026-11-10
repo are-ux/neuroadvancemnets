@@ -81,11 +81,14 @@ Follows the supplied landing page design skill, with brand colours from the logo
 
 - **Type:** Manrope only. Every text element uses a named style (`heading-1` to `caption-5`) defined in `app/globals.css`.
 - **Spacing:** 0, 2, 4, 8, 12, 16, 24, 32, 40, 48, 64, 80, 96 px.
-- **Colour:** navy `#001A38`, orange `#FC6A01`, soft white `#F7F9FC`, ice `#DDE8F1`, slate `#142F4C`. Primary buttons use navy text on orange because white on orange fails contrast.
+- **Colour (revision 2):** paper `#F7F8F6`, surface `#E9EDF0`, ink `#172A3E`, mist `#9EAEBB`, night `#101A26`, accent `#E47B36`. Primary buttons are ink. Orange is reserved for anatomy and single points of emphasis.
+- **Navigation:** translucent glass that thickens to frosted glass over dark sections, because the logo is never recoloured.
 - **Motion:** `cubic-bezier(0.22, 1, 0.36, 1)`, transform and opacity only, reveals through IntersectionObserver.
 - **Backgrounds:** flat. The only gradient is the hero heading text.
 
 Deviations from the skill, made because the brief overrides it: dark sections use brand navy rather than the skill's neutral dark palette, and GSAP was left out because the story timeline is a small pure function and did not need the dependency.
+
+See `docs/redesign-audit.md` for the audit behind revision 2 and the staged redesign plan.
 
 ## Verified and not verified
 

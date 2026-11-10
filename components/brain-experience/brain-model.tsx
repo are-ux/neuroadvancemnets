@@ -33,17 +33,19 @@ function createCortexMaterial() {
     uSulcus: { value: new THREE.Color(cortex.sulcus) },
     uDimGyrus: { value: new THREE.Color(cortex.dimGyrus) },
     uDimSulcus: { value: new THREE.Color(cortex.dimSulcus) },
-    uOrange: { value: new THREE.Color(colors.orange) },
-    uOrangeDeep: { value: new THREE.Color(colors.orangeDeep) },
+    uOrange: { value: new THREE.Color(colors.accent) },
+    uOrangeDeep: { value: new THREE.Color(colors.accentDeep) },
   };
 
   const material = new THREE.MeshPhysicalMaterial({
     color: 0xffffff,
-    roughness: 0.58,
+    // Matte and organic: no clearcoat, with a soft sheen that lifts grazing edges the way tissue does.
+    roughness: 0.74,
     metalness: 0,
-    clearcoat: 0.35,
-    clearcoatRoughness: 0.45,
-    envMapIntensity: 0.9,
+    sheen: 0.5,
+    sheenRoughness: 0.55,
+    sheenColor: new THREE.Color("#FFF4E6"),
+    envMapIntensity: 0.7,
   });
 
   material.onBeforeCompile = (shader) => {
@@ -171,24 +173,27 @@ export function BrainModel({ getPosition, reducedMotion, onReady }: Props) {
     current.azimuth += (target.azimuth - current.azimuth) * k;
     current.elevation += (target.elevation - current.elevation) * k;
     current.zoom += (target.zoom - current.zoom) * k;
+    current.x += (target.x - current.x) * k;
+    current.y += (target.y - current.y) * k;
     current.dim += (target.dim - current.dim) * k;
     current.activity += (target.activity - current.activity) * k;
     for (let i = 0; i < 4; i++) current.highlight[i] += (target.highlight[i] - current.highlight[i]) * k;
 
-    intro.current += (1 - intro.current) * (reducedMotion ? 1 : 1 - Math.exp(-2.2 * dt));
+    intro.current += (1 - intro.current) * (reducedMotion ? 1 : 1 - Math.exp(-1.6 * dt));
 
     // A slow, small sway gives depth without ever reading as spinning.
     const t = state.clock.elapsedTime;
     const sway = reducedMotion ? 0 : 1;
-    const azimuth = current.azimuth + Math.sin(t * 0.22) * 2.2 * sway;
+    // Entry: the brain turns the last few degrees into its cover pose as it fades in.
+    const azimuth = current.azimuth + Math.sin(t * 0.22) * 2.2 * sway - (1 - intro.current) * 18;
     const elevation = current.elevation + Math.sin(t * 0.17 + 1.3) * 1.1 * sway;
 
     if (turn.current && tilt.current) {
       // Anchor: right of the copy on wide screens, upper area on narrow ones.
       // Matches the CSS lg breakpoint, which includes the scrollbar unlike the canvas width.
       const wide = window.innerWidth >= STORY_DESKTOP_MIN;
-      const x = wide ? viewport.width * 0.21 : 0;
-      const y = wide ? 0 : viewport.height * 0.235;
+      const x = wide ? viewport.width * current.x : 0;
+      const y = wide ? viewport.height * current.y : viewport.height * 0.235;
       const fit = wide ? Math.min(1.32, viewport.width * 0.215) : Math.min(0.78, viewport.width * 0.4);
       tilt.current.scale.setScalar(fit * current.zoom * (0.94 + 0.06 * intro.current));
       tilt.current.position.set(x, y, 0);

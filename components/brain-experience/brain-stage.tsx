@@ -36,7 +36,7 @@ export function BrainStage({ getPosition, active, reducedMotion }: Props) {
 
   // Same anchor as the 3D brain: right of the copy on wide screens, upper area on narrow ones.
   const anchor =
-    "absolute left-1/2 top-[26%] -translate-x-1/2 -translate-y-1/2 lg:left-[71%] lg:top-1/2";
+    "absolute left-1/2 top-[26%] -translate-x-1/2 -translate-y-1/2 lg:top-[42%]";
 
   return (
     <div
@@ -54,17 +54,17 @@ export function BrainStage({ getPosition, active, reducedMotion }: Props) {
 
       {support !== "none" && !ready && (
         <div className={`${anchor} flex flex-col items-center gap-4`}>
-          <div className="skeleton h-40 w-56 rounded-full bg-slate lg:h-72 lg:w-96" />
-          <p className="caption-2 text-ice/70">Loading the 3D brain</p>
+          <div className="skeleton story-skeleton h-40 w-56 rounded-full lg:h-72 lg:w-96" />
+          <p className="caption-2 story-faint">Loading the 3D brain</p>
         </div>
       )}
 
       {support === "none" && (
         <div className={`${anchor} flex flex-col items-center gap-4`}>
-          <div className="flex size-40 items-center justify-center rounded-full bg-soft lg:size-72">
+          <div className="flex size-40 items-center justify-center rounded-full bg-white lg:size-72">
             <Image src="/brand/mark.png" alt="" width={512} height={512} className="size-24 lg:size-40" />
           </div>
-          <p className="max-w-64 text-center caption-2 text-ice/70">
+          <p className="max-w-64 text-center caption-2 story-faint">
             The interactive 3D brain needs WebGL, which this browser does not provide. Every chapter is still
             available as text.
           </p>

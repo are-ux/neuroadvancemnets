@@ -18,14 +18,14 @@ type Props = {
 function Studio() {
   return (
     <>
-      <hemisphereLight args={["#dde8f1", "#001a38", 0.55]} />
-      <directionalLight position={[-3.5, 4, 5]} intensity={2.3} color="#fff4ea" />
+      <hemisphereLight args={["#ffffff", "#7d8794", 0.5]} />
+      <directionalLight position={[-3.5, 4.5, 5]} intensity={2.5} color="#fff6ec" />
       <directionalLight position={[4.5, 1, 3]} intensity={0.55} color="#cfe0f2" />
       <directionalLight position={[2.5, 3, -5]} intensity={1.5} color="#dde8f1" />
       <Environment resolution={64} frames={1}>
         <Lightformer form="rect" intensity={2.2} position={[-4, 5, 4]} scale={[8, 4, 1]} color="#ffffff" />
         <Lightformer form="rect" intensity={0.9} position={[6, 0, 2]} scale={[4, 8, 1]} color="#dde8f1" />
-        <Lightformer form="rect" intensity={0.5} position={[0, -5, 0]} rotation={[Math.PI / 2, 0, 0]} scale={[10, 10, 1]} color="#142f4c" />
+        <Lightformer form="rect" intensity={0.5} position={[0, -5, 0]} rotation={[Math.PI / 2, 0, 0]} scale={[10, 10, 1]} color="#5c6672" />
       </Environment>
     </>
   );

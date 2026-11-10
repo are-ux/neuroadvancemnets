@@ -11,6 +11,9 @@ export type StoryState = {
   azimuth: number;
   elevation: number;
   zoom: number;
+  /** Screen anchor on wide layouts, as fractions of the viewport from its centre. */
+  x: number;
+  y: number;
   /** Weights for frontal, parietal, temporal, occipital. */
   highlight: [number, number, number, number];
   /** How strongly the cortex outside the highlight is dimmed. */
@@ -55,6 +58,8 @@ export function sampleStory(position: number, out: StoryState): StoryState {
   out.azimuth = lerp(a.view.azimuth, b.view.azimuth, t);
   out.elevation = lerp(a.view.elevation, b.view.elevation, t);
   out.zoom = lerp(a.view.zoom, b.view.zoom, t);
+  out.x = lerp(a.view.x, b.view.x, t);
+  out.y = lerp(a.view.y, b.view.y, t);
   for (let k = 0; k < 4; k++) out.highlight[k] = lerp(a.highlight[k], b.highlight[k], t);
   out.dim = lerp(a.dim, b.dim, t);
   out.activity = lerp(a.activity, b.activity, t);
@@ -65,6 +70,8 @@ export const createStoryState = (): StoryState => ({
   azimuth: heroView.azimuth,
   elevation: heroView.elevation,
   zoom: heroView.zoom,
+  x: heroView.x,
+  y: heroView.y,
   highlight: [0, 0, 0, 0],
   dim: 0,
   activity: 0,
