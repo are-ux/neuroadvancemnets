@@ -15,14 +15,36 @@ export const colors = {
 } as const;
 
 /**
- * Cortex material palette for the 3D brain: a matte ivory with warm grey sulci.
- * The dim pair is what the cortex outside a highlighted lobe falls back to.
+ * Palette for the layered brain visualization, one preset per page tone.
+ * Paper: pearl crowns, ice blue folds, an azure glass edge, fine blue traces.
+ * Night: a blue translucent body with a cyan white edge and bright traces.
+ * Orange is deliberately absent: lobes are emphasised with light, not brand colour.
  */
-export const cortex = {
-  gyrus: "#EFEAE1",
-  sulcus: "#A79C90",
-  dimGyrus: "#53606E",
-  dimSulcus: "#27323F",
+export const brainPalette = {
+  paper: {
+    gyrus: "#FBFDFF",
+    sulcus: "#4C8DC6",
+    shade: "#A6C4E6",
+    rim: "#1B68B0",
+    ghost: "#E9EEF2",
+    lobe: "#49B4EC",
+    edge: "#1669AE",
+    line: "#1877C2",
+    pulse: "#0096E6",
+    halo: "#BCD9F1",
+    shadow: "#172A3E",
+  },
+  night: {
+    gyrus: "#6FAFE0",
+    sulcus: "#123B62",
+    shade: "#3E5E8C",
+    rim: "#C6F0FF",
+    lobe: "#5FCBFF",
+    edge: "#E8FAFF",
+    line: "#E2F7FF",
+    pulse: "#FFFFFF",
+    halo: "#2C8AD0",
+  },
 } as const;
 
 export const motion = {

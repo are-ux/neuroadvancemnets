@@ -9,6 +9,7 @@ const BrainCanvas = dynamic(() => import("./brain-canvas"), { ssr: false });
 type Props = {
   getPosition: () => number;
   active: boolean;
+  dark: boolean;
   reducedMotion: boolean;
 };
 
@@ -25,7 +26,7 @@ function hasWebGL() {
  * Owns the lifecycle around the 3D canvas: capability check, lazy loading,
  * the loading placeholder, and the static fallback when WebGL is unavailable.
  */
-export function BrainStage({ getPosition, active, reducedMotion }: Props) {
+export function BrainStage({ getPosition, active, dark, reducedMotion }: Props) {
   const [support, setSupport] = useState<"checking" | "webgl" | "none">("checking");
   const [ready, setReady] = useState(false);
   const onReady = useCallback(() => setReady(true), []);
@@ -42,13 +43,13 @@ export function BrainStage({ getPosition, active, reducedMotion }: Props) {
     <div
       className="absolute inset-0"
       role="img"
-      aria-label="3D model of the human cerebral cortex. As you scroll, it turns to show the frontal, temporal, parietal, and occipital lobes, each highlighted in orange."
+      aria-label="3D model of the human cerebral cortex. As you scroll, it turns to show the frontal, temporal, parietal, and occipital lobes, each one lit in turn."
     >
       {support === "webgl" && (
         <div
           className={`absolute inset-0 transition-opacity duration-700 ease-settle ${ready ? "opacity-100" : "opacity-0"}`}
         >
-          <BrainCanvas getPosition={getPosition} active={active} reducedMotion={reducedMotion} onReady={onReady} />
+          <BrainCanvas getPosition={getPosition} active={active} dark={dark} reducedMotion={reducedMotion} onReady={onReady} />
         </div>
       )}
 

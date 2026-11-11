@@ -127,7 +127,7 @@ export function BrainStory() {
       <div className="pointer-events-none absolute inset-0">
         <div className="sticky top-0 h-lvh overflow-hidden">
           <div className="story-bg absolute inset-x-0 top-0 h-[46%] lg:hidden" />
-          <BrainStage getPosition={getPosition} active={inView} reducedMotion={reducedMotion} />
+          <BrainStage getPosition={getPosition} active={inView} dark={dark} reducedMotion={reducedMotion} />
 
           <nav
             aria-label="Brain chapters"
