@@ -128,7 +128,9 @@ export function BrainModel({ shot, callouts, reducedMotion, onReady }: Props) {
     // The breakpoint matches the CSS one, which includes the scrollbar unlike the canvas width.
     const wide = window.innerWidth >= STORY_DESKTOP_MIN;
     const referenceW = unit * REFERENCE_DISTANCE * (width / height);
-    const fit = wide ? Math.min(1.32, referenceW * 0.215) : Math.min(0.78, referenceW * 0.4);
+    // Narrow layouts: phones are limited by width, portrait tablets get a larger brain to fill their taller band.
+    const tablet = window.innerWidth >= 640;
+    const fit = wide ? Math.min(1.32, referenceW * 0.215) : Math.min(tablet ? 0.94 : 0.78, referenceW * 0.4);
     const scale = fit * s.zoom * (s.distance / REFERENCE_DISTANCE) * (0.95 + 0.05 * intro.current);
     const x = viewW * s.x;
     const y = viewH * s.y;

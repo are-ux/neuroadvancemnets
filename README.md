@@ -11,7 +11,9 @@ npm run build      # production build
 npm run typecheck
 ```
 
-Set `NEXT_PUBLIC_SITE_URL` in production so social tags resolve to absolute URLs.
+Copy `.env.example` to `.env.local`. It sets the site address, the Calendly event, and whether booking is switched on.
+
+Booking is off unless `NEXT_PUBLIC_BOOKING_ENABLED=true`. Keep it off on the public site until consultations are authorized. See `docs/stage-e-homepage-booking.md`.
 
 ## Structure
 

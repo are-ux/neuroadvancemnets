@@ -38,8 +38,8 @@ function BeatBlock({ id, copy, lobe, active }: { id: BeatId; copy: BeatCopy; lob
       data-beat={id}
       className={`beat-copy absolute inset-0 flex items-end ${centre ? "" : "lg:items-center"} ${active ? "is-active" : ""}`}
     >
-      <div className={`shell flex pb-8 lg:pb-0 ${sideClass[copy.side]} ${centre ? "lg:pb-16" : ""}`}>
-        <div className={`flex w-full flex-col gap-3 lg:gap-4 ${centre ? "max-w-[680px] items-center" : "max-w-md lg:max-w-[30rem]"}`}>
+      <div className={`shell flex pb-8 md:pb-16 lg:pb-0 ${sideClass[copy.side]} ${centre ? "lg:pb-16" : ""}`}>
+        <div className={`flex w-full flex-col gap-3 lg:gap-4 ${centre ? "max-w-[680px] items-center" : "max-w-md md:max-w-xl lg:max-w-[30rem]"}`}>
           <p className="flex items-center gap-3 caption-1 story-body">
             <span className="tabular-nums story-faint">{String(copy.index).padStart(2, "0")}</span>
             <span aria-hidden="true" className="story-rule h-px w-8" />
@@ -58,7 +58,7 @@ function BeatBlock({ id, copy, lobe, active }: { id: BeatId; copy: BeatCopy; lob
             </p>
           )}
 
-          <h3 className={`story-ink ${centre ? "heading-4 md:heading-3" : copy.pair ? "heading-3 lg:heading-1" : "heading-4 lg:heading-2"}`}>
+          <h3 className={`story-ink ${centre ? "heading-4 md:heading-3" : copy.pair ? "heading-3 md:heading-2 lg:heading-1" : "heading-4 md:heading-3 lg:heading-2"}`}>
             {lines.map((line) => (
               <span key={line} className={lines.length > 1 ? "block" : undefined}>
                 {line}
@@ -66,7 +66,7 @@ function BeatBlock({ id, copy, lobe, active }: { id: BeatId; copy: BeatCopy; lob
             ))}
           </h3>
           {copy.tagline && <p className="title-2 story-ink lg:title-1">{copy.tagline}</p>}
-          <p className={`body-6 story-body lg:body-3 ${centre ? "max-w-md" : ""}`}>{copy.body}</p>
+          <p className={`body-6 story-body md:body-3 ${centre ? "max-w-md" : ""}`}>{copy.body}</p>
           {copy.note && <p className="caption-2 story-faint">{copy.note}</p>}
           {centre && <p className="max-w-md caption-5 story-faint">{modelCredit}</p>}
         </div>

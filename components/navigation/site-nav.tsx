@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useEffect, useState, type CSSProperties } from "react";
 import { buttonClass } from "@/components/ui/button";
 import { consultationLink, navItems } from "@/lib/content/site";
@@ -83,6 +84,7 @@ export function SiteNav() {
   const [open, setOpen] = useState(false);
   const active = useActiveSection();
   const dark = useDarkBackdrop();
+  const onBookingPage = usePathname() === consultationLink.href;
 
   useEffect(() => {
     if (!open) return;
@@ -146,7 +148,7 @@ export function SiteNav() {
           <div className="flex items-center gap-2 justify-self-end">
             <Link
               href={consultationLink.href}
-              aria-current={active === consultationLink.section ? "true" : undefined}
+              aria-current={onBookingPage ? "page" : active === consultationLink.section ? "true" : undefined}
               className={buttonClass("primary", "sm", "hidden sm:inline-flex")}
               onClick={() => setOpen(false)}
             >

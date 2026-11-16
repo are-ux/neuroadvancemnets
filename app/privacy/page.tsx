@@ -15,6 +15,12 @@ export default function PrivacyPage() {
         The signup forms ask for an email address only. They are not yet connected to a mailing service, so no
         address is stored. The site does not ask for medical information.
       </p>
+      <h2 className="heading-6">Consultation booking</h2>
+      <p>
+        The booking page embeds a calendar from Calendly, a separate scheduling service. The calendar loads only on
+        that page. Details entered there go to Calendly and are handled under its privacy policy, and Calendly may
+        set cookies. The calendar is for arranging a time only and should not be used to send medical information.
+      </p>
       <h2 className="heading-6">Still to be supplied</h2>
       <p>{"{{data controller and contact address}}"}</p>
       <p>{"{{mailing provider and analytics, if any}}"}</p>

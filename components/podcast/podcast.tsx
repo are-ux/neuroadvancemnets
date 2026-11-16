@@ -1,73 +1,71 @@
-"use client";
-
-import dynamic from "next/dynamic";
-import { useEffect, useState } from "react";
-import { Microphone } from "@phosphor-icons/react/dist/ssr";
 import { Reveal } from "@/components/ui/reveal";
 import { SignupForm } from "@/components/ui/signup-form";
-import { useInView, useReducedMotion } from "@/lib/animations/hooks";
 
-const SoundwaveCanvas = dynamic(() => import("./soundwave-canvas"), { ssr: false });
-
-/** Flat bars shown while the 3D scene loads, and kept as the fallback without WebGL. */
-function StaticWave() {
-  const heights = [14, 22, 34, 52, 40, 64, 88, 70, 96, 76, 58, 82, 60, 44, 56, 36, 24, 30, 18, 12];
+/**
+ * A quiet audio motif: one line of hairline strokes whose heights follow a slow
+ * envelope, like a level meter at rest. Drawn once, never animated.
+ */
+function LevelLine() {
+  const count = 96;
+  const bars = Array.from({ length: count }, (_, i) => {
+    const x = i / (count - 1);
+    const envelope = Math.sin(x * Math.PI) ** 1.2;
+    const detail = 0.5 + 0.3 * Math.sin(x * 21 + 0.6) + 0.2 * Math.sin(x * 53 + 2.1);
+    return Math.max(0.06, envelope * Math.max(0.15, detail));
+  });
   return (
-    <div aria-hidden="true" className="flex h-full items-center justify-center gap-2">
-      {heights.map((h, i) => (
-        <span key={i} className={`w-1 rounded-full ${i === 8 ? "bg-orange" : "bg-ice/60"}`} style={{ height: `${h}%`, maxHeight: 160 }} />
+    <svg viewBox={`0 0 ${count * 6} 120`} preserveAspectRatio="none" aria-hidden="true" focusable="false" className="h-24 w-full text-mist lg:h-32">
+      {bars.map((h, i) => (
+        <line
+          key={i}
+          x1={i * 6 + 3}
+          x2={i * 6 + 3}
+          y1={Math.round((60 - h * 54) * 10) / 10}
+          y2={Math.round((60 + h * 54) * 10) / 10}
+          stroke="currentColor"
+          strokeWidth="1"
+          vectorEffect="non-scaling-stroke"
+          opacity={i % 8 === 0 ? 0.9 : 0.4}
+        />
       ))}
-    </div>
+    </svg>
   );
 }
 
+/**
+ * NeuroConversations: the second and last dark passage on the page, echoing the
+ * anatomy story. The podcast has not launched, so there are no episodes or guests here.
+ */
 export function Podcast() {
-  // The 3D scene is only requested once the section approaches the viewport, and pauses when it leaves.
-  const [nearRef, near] = useInView<HTMLDivElement>({ rootMargin: "30% 0px" });
-  const [visibleRef, visible] = useInView<HTMLDivElement>({ once: false, rootMargin: "0px" });
-  const reducedMotion = useReducedMotion();
-  const [webgl, setWebgl] = useState(true);
-
-  useEffect(() => {
-    try {
-      const canvas = document.createElement("canvas");
-      setWebgl(Boolean(canvas.getContext("webgl2") ?? canvas.getContext("webgl")));
-    } catch {
-      setWebgl(false);
-    }
-  }, []);
-
   return (
-    <section id="podcast" aria-labelledby="podcast-title" className="px-4 py-10 md:px-8 lg:py-12">
-      <div ref={nearRef} className="mx-auto max-w-[1200px] overflow-hidden on-dark rounded-3xl bg-night text-white">
-        <div className="grid lg:grid-cols-12 lg:items-center">
-          <Reveal className="flex flex-col gap-4 p-6 md:p-12 lg:col-span-6 lg:p-16">
-            <p className="flex items-center gap-2 caption-1 text-ice">
-              <Microphone aria-hidden="true" weight="fill" className="size-4 text-orange" />
-              NeuroConversations podcast
+    <section id="podcast" data-nav-tone="dark" aria-labelledby="podcast-title" className="on-dark bg-night py-20 text-white lg:py-24">
+      <div className="shell">
+        <Reveal className="grid gap-8 lg:grid-cols-12 lg:items-end lg:gap-8">
+          <div className="flex flex-col gap-4 lg:col-span-7">
+            <p className="flex items-center gap-3 caption-1 text-mist">
+              <span aria-hidden="true" className="h-px w-6 bg-white/40" />
+              NeuroConversations, a podcast
               <span className="rounded-lg border border-white/20 px-2 py-1 caption-3 text-white">Coming soon</span>
             </p>
-            <h2 id="podcast-title" className="heading-3 text-white lg:heading-2">
+            <h2 id="podcast-title" className="heading-3 text-white lg:heading-1">
               Conversations worth thinking about.
             </h2>
-            <p className="max-w-md body-3 text-ice lg:title-2">
-              Exploring neuroscience through ideas, discoveries, and conversations with fascinating minds.
-            </p>
-            <div className="mt-4 flex flex-col gap-2">
-              <p className="title-3 text-white">Hear about the first episode</p>
-              <SignupForm list="podcast" submitLabel="Notify me" tone="dark" />
-            </div>
-          </Reveal>
-
-          <div
-            ref={visibleRef}
-            role="img"
-            aria-label="A soundwave made of rounded bars, shown in three dimensions."
-            className="relative h-64 lg:col-span-6 lg:h-[480px]"
-          >
-            {webgl && near ? <SoundwaveCanvas active={visible} reducedMotion={reducedMotion} /> : <StaticWave />}
           </div>
-        </div>
+          <p className="max-w-sm body-3 text-ice lg:col-span-4 lg:col-start-9 lg:title-2">
+            Exploring neuroscience through ideas, discoveries, and conversations with fascinating minds.
+          </p>
+        </Reveal>
+
+        <Reveal className="mt-10 lg:mt-12">
+          <LevelLine />
+        </Reveal>
+
+        <Reveal className="mt-10 grid gap-4 lg:mt-12 lg:grid-cols-12 lg:gap-8">
+          <p className="title-2 text-white lg:col-span-5">Hear about the first episode.</p>
+          <div className="lg:col-span-6 lg:col-start-7">
+            <SignupForm list="podcast" submitLabel="Notify me" tone="dark" />
+          </div>
+        </Reveal>
       </div>
     </section>
   );
