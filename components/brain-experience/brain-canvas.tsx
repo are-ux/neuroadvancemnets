@@ -1,15 +1,17 @@
 "use client";
 
-import { Suspense } from "react";
+import { Suspense, type RefObject } from "react";
 import { Canvas } from "@react-three/fiber";
+import type { Shot } from "@/lib/content/brain-chapters";
 import { BrainModel } from "./brain-model";
+import type { CalloutNodes } from "./brain-stage";
 
 type Props = {
-  getPosition: () => number;
+  /** The shot the story timeline is tweening. Read once per frame, never through React state. */
+  shot: RefObject<Shot>;
+  callouts: RefObject<CalloutNodes>;
   /** Rendering pauses completely while the story is off screen. */
   active: boolean;
-  /** Page tone behind the brain: selects the paper or night lighting preset. */
-  dark: boolean;
   reducedMotion: boolean;
   onReady: () => void;
 };
@@ -18,7 +20,7 @@ type Props = {
  * One persistent canvas for the whole brain story. Lighting lives in the brain
  * shaders (see brain-materials.ts), so the scene needs no lights or environment map.
  */
-export default function BrainCanvas({ getPosition, active, dark, reducedMotion, onReady }: Props) {
+export default function BrainCanvas({ shot, callouts, active, reducedMotion, onReady }: Props) {
   return (
     <Canvas
       frameloop={active ? "always" : "never"}
@@ -28,7 +30,7 @@ export default function BrainCanvas({ getPosition, active, dark, reducedMotion, 
       onCreated={({ gl }) => gl.setClearColor(0x000000, 0)}
     >
       <Suspense fallback={null}>
-        <BrainModel getPosition={getPosition} dark={dark} reducedMotion={reducedMotion} onReady={onReady} />
+        <BrainModel shot={shot} callouts={callouts} reducedMotion={reducedMotion} onReady={onReady} />
       </Suspense>
     </Canvas>
   );

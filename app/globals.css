@@ -145,32 +145,39 @@ em, i, cite, address { font-style: normal; }
 }
 
 /* ---------------- Brain story tones ----------------
-   The story opens on paper and dims to night as the anatomy chapters
-   arrive. Colours are variables so copy and background change together. */
+   The story opens on paper and dims to night as the visitor scrolls into the
+   anatomy chapters. The story timeline writes these variables as it goes, so
+   background, copy, and callouts change together and in step with the scroll.
+   These are the paper values, used before script runs and without it. */
 .story {
   --story-bg: var(--color-soft);
   --story-ink: var(--color-navy);
   --story-body: var(--color-slate);
   --story-faint: #6b7c8d;
-  --story-rule: rgb(23 42 62 / 0.18);
+  --story-rule: #cfd5da;
   --story-skeleton: var(--color-ice);
   background-color: var(--story-bg);
-  transition: background-color 900ms var(--ease-settle);
 }
-.story[data-tone="dark"] {
-  --story-bg: var(--color-night);
-  --story-ink: #f7f8f6;
-  --story-body: #c7d0d8;
-  --story-faint: var(--color-mist);
-  --story-rule: rgb(255 255 255 / 0.22);
-  --story-skeleton: #1b2836;
-}
-.story-bg { background-color: var(--story-bg); transition: background-color 900ms var(--ease-settle); }
-.story-ink { color: var(--story-ink); transition: color 900ms var(--ease-settle); }
-.story-body { color: var(--story-body); transition: color 900ms var(--ease-settle); }
-.story-faint { color: var(--story-faint); transition: color 900ms var(--ease-settle); }
-.story-rule { background-color: var(--story-rule); transition: background-color 900ms var(--ease-settle); }
+.story-bg { background-color: var(--story-bg); }
+.story-ink { color: var(--story-ink); }
+.story-body { color: var(--story-body); }
+.story-faint { color: var(--story-faint); }
+.story-rule { background-color: var(--story-rule); }
 .story-skeleton { background-color: var(--story-skeleton); }
+
+/* Pinned story: copy for each beat is stacked in one frame and changes in place.
+   Inactive blocks stay in the accessibility tree, so the whole story reads in order. */
+.beat-copy {
+  opacity: 0;
+  transform: translateY(16px);
+  pointer-events: none;
+  transition: opacity 500ms var(--ease-settle), transform 600ms var(--ease-settle);
+}
+.beat-copy.is-active { opacity: 1; transform: none; }
+.beat-copy.is-active > * { pointer-events: auto; }
+
+.still-layer { opacity: 0; transition: opacity 600ms var(--ease-settle); }
+.still-layer.is-active { opacity: 1; }
 
 /* Hero entry: each line settles into place once, on load. Pure CSS, so it needs no script. */
 .hero-in {
@@ -218,6 +225,7 @@ em, i, cite, address { font-style: normal; }
   .menu-link { transform: none; }
   .tagline-word { opacity: 1; transition: none; }
   .skeleton { animation: none; opacity: 0.5; }
+  .beat-copy { transform: none; }
   .hero-in { animation: hero-fade 600ms var(--ease-settle) forwards; transform: none; }
   @keyframes hero-fade { to { opacity: 1; } }
 }

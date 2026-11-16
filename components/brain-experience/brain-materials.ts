@@ -20,6 +20,7 @@ export type BrainUniforms = {
   uTime: { value: number };
   uDim: { value: number };
   uActivity: { value: number };
+  uAll: { value: number };
   uHighlight: { value: THREE.Vector4 };
 };
 
@@ -28,6 +29,7 @@ export const createBrainUniforms = (): BrainUniforms => ({
   uTime: { value: 0 },
   uDim: { value: 0 },
   uActivity: { value: 0 },
+  uAll: { value: 0 },
   uHighlight: { value: new THREE.Vector4(0, 0, 0, 0) },
 });
 
@@ -53,6 +55,7 @@ void main() {
 const shellFragment = /* glsl */ `
 uniform float uTone;
 uniform float uDim;
+uniform float uAll;
 uniform vec4 uHighlight;
 uniform vec3 uGyrusL; uniform vec3 uSulcusL; uniform vec3 uShadeL; uniform vec3 uRimL; uniform vec3 uGhostL; uniform vec3 uLobeL; uniform vec3 uEdgeL;
 uniform vec3 uGyrusD; uniform vec3 uSulcusD; uniform vec3 uShadeD; uniform vec3 uRimD; uniform vec3 uLobeD; uniform vec3 uEdgeD;
@@ -65,10 +68,10 @@ void main() {
   vec3 N = normalize(vNormal);
   vec3 V = normalize(vView);
   float facing = clamp(dot(N, V), 0.0, 1.0);
-  float rim = pow(1.0 - facing, 2.2);
+  float rim = pow(1.0 - facing, 2.0);
 
   // Sulcal depth from the anatomical surface data: 0 on gyral crowns, 1 deep in a sulcus.
-  float depth = smoothstep(0.36, 0.84, vDepth);
+  float depth = smoothstep(0.33, 0.8, vDepth);
 
   // Soft studio light in view space, wrapped so no side ever falls to black.
   float key = dot(N, normalize(vec3(-0.46, 0.62, 0.63))) * 0.5 + 0.5;
@@ -82,10 +85,15 @@ void main() {
   // Fine line where the atlas boundary of the highlighted lobe runs.
   float edge = (1.0 - smoothstep(0.0, fwidth(lobe) * 1.6 + 0.0001, abs(lobe - 0.5))) * uDim;
 
+  // Overview: a contour wherever one lobe meets another, or meets cortex outside the four lobes.
+  float top = max(max(vLobe.x, vLobe.y), max(vLobe.z, vLobe.w));
+  float contour = (1.0 - smoothstep(0.0, fwidth(top) * 1.5 + 0.0001, abs(top - 0.5))) * uAll;
+
   // Paper preset: pearl crowns, ice blue folds, azure glass edge.
   vec3 baseL = mix(uGyrusL, uSulcusL, depth);
   vec3 colL = mix(baseL * uShadeL, baseL, smoothstep(0.12, 0.9, light));
-  colL = mix(colL, uRimL, rim * 0.82);
+  colL *= mix(1.0, 0.9, depth * depth);
+  colL = mix(colL, uRimL, rim * 0.88);
   colL += vec3(sheen * 0.16);
   colL = mix(colL, mix(colL, uGhostL, 0.66), away);
   colL = mix(colL, mix(colL, uLobeL, 0.3 + 0.2 * depth), inside);
@@ -99,13 +107,13 @@ void main() {
   colD += uLobeD * (0.07 + 0.2 * (1.0 - depth) * light) * inside;
 
   vec3 col = mix(colL, colD, uTone);
-  col = mix(col, mix(uEdgeL, uEdgeD, uTone), edge * 0.8);
+  col = mix(col, mix(uEdgeL, uEdgeD, uTone), max(edge * 0.8, contour * 0.6));
 
   // Apparent translucency: airy where the surface faces the viewer, solid toward the silhouette.
-  float body = mix(0.93, 0.74, uTone);
+  float body = mix(0.96, 0.74, uTone);
   float alpha = mix(body, 1.0, clamp(rim * 1.4 + depth * 0.25, 0.0, 1.0));
   alpha = mix(alpha, alpha * mix(0.7, 0.82, uTone), away);
-  alpha = max(alpha, edge);
+  alpha = max(alpha, max(edge, contour * 0.7));
 
   gl_FragColor = vec4(col, alpha);
   #include <colorspace_fragment>

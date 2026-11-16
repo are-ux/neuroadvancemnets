@@ -1,93 +1,98 @@
-import { brainChapters, heroView, LOBE_CHANNELS, type BrainView } from "@/lib/content/brain-chapters";
+import { beats, stillShot, type Shot } from "@/lib/content/brain-chapters";
 
 /**
- * Deterministic timeline for the brain story.
+ * Scheduling for the brain story.
  *
- * The whole 3D state is a pure function of one number, the story position:
- * 0 is the hero, 1 the first chapter, and so on. Nothing is stacked or
- * triggered, so scrolling backward replays the exact same frames.
+ * The story is one GSAP timeline scrubbed by scroll. Its time axis is scroll
+ * distance in pixels from the top of the story section.
+ *
+ * Layout it describes: the cover scrolls away, then a single frame pins and
+ * stays pinned while the visitor scrolls through the six anatomy beats. Every
+ * beat gets the same distance (a step). A beat holds for the first part of its
+ * step and the camera travels to the next beat in the remainder, so no scroll
+ * is spent on copy moving in or out.
  */
-export type StoryState = {
-  azimuth: number;
-  elevation: number;
-  zoom: number;
-  /** Screen anchor on wide layouts, as fractions of the viewport from its centre. */
-  x: number;
-  y: number;
-  /** Weights for frontal, parietal, temporal, occipital. */
-  highlight: [number, number, number, number];
-  /** How strongly the cortex outside the highlight is dimmed. */
-  dim: number;
-  activity: number;
+export type StoryMetrics = {
+  viewport: number;
+  /** Scroll offset at which the anatomy frame pins. */
+  pin: number;
+  /** Scroll distance the frame stays pinned for. */
+  travel: number;
 };
 
-type Stop = { view: BrainView; highlight: [number, number, number, number]; dim: number; activity: number };
+export type BeatWindow = { arrive: number; depart: number };
 
-const oneHot = (index: number): [number, number, number, number] => {
-  const w: [number, number, number, number] = [0, 0, 0, 0];
-  if (index >= 0) w[index] = 1;
-  return w;
-};
+/** Anatomy beats after the cover. */
+const PINNED_BEATS = beats.length - 1;
+/** Share of each step spent holding still before the camera moves on. */
+const HOLD = 0.3;
+/** Extra hold on the last beat, in steps, before the frame releases. */
+const TAIL = 0.4;
 
-const stops: Stop[] = [
-  { view: heroView, highlight: oneHot(-1), dim: 0, activity: 0 },
-  ...brainChapters.map((c) => ({
-    view: c.view,
-    highlight: oneHot(c.highlight ? LOBE_CHANNELS.indexOf(c.highlight) : -1),
-    dim: c.highlight ? 1 : 0,
-    activity: c.activity,
-  })),
-];
+/** Scroll distance given to one beat. */
+export const stepFor = (travel: number) => travel / (PINNED_BEATS - 1 + TAIL);
 
-export const STORY_STOPS = stops.length;
-
-const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
-const clamp01 = (v: number) => Math.min(1, Math.max(0, v));
-const smoother = (t: number) => t * t * t * (t * (t * 6 - 15) + 10);
-
-/**
- * Each stop holds still while its text is centred, and the move to the next
- * stop happens in the middle 60% of the gap between them.
- */
-export function sampleStory(position: number, out: StoryState): StoryState {
-  const p = Math.min(stops.length - 1, Math.max(0, position));
-  const i = Math.min(stops.length - 2, Math.floor(p));
-  const t = smoother(clamp01((p - i - 0.2) / 0.6));
-  const a = stops[i];
-  const b = stops[i + 1];
-  out.azimuth = lerp(a.view.azimuth, b.view.azimuth, t);
-  out.elevation = lerp(a.view.elevation, b.view.elevation, t);
-  out.zoom = lerp(a.view.zoom, b.view.zoom, t);
-  out.x = lerp(a.view.x, b.view.x, t);
-  out.y = lerp(a.view.y, b.view.y, t);
-  for (let k = 0; k < 4; k++) out.highlight[k] = lerp(a.highlight[k], b.highlight[k], t);
-  out.dim = lerp(a.dim, b.dim, t);
-  out.activity = lerp(a.activity, b.activity, t);
-  return out;
+export function scheduleBeats(m: StoryMetrics): BeatWindow[] {
+  const step = stepFor(m.travel);
+  const windows: BeatWindow[] = [{ arrive: 0, depart: m.viewport * 0.08 }];
+  for (let i = 0; i < PINNED_BEATS; i++) {
+    const arrive = i === 0 ? m.pin - m.viewport * 0.04 : m.pin + i * step;
+    const depart = i === PINNED_BEATS - 1 ? m.pin + m.travel : m.pin + (i + HOLD) * step;
+    windows.push({ arrive, depart });
+  }
+  // Keep the schedule strictly ordered whatever the layout measures to.
+  for (let i = 1; i < windows.length; i++) {
+    windows[i].arrive = Math.max(windows[i].arrive, windows[i - 1].depart + 1);
+    windows[i].depart = Math.max(windows[i].depart, windows[i].arrive);
+  }
+  return windows;
 }
 
-export const createStoryState = (): StoryState => ({
-  azimuth: heroView.azimuth,
-  elevation: heroView.elevation,
-  zoom: heroView.zoom,
-  x: heroView.x,
-  y: heroView.y,
-  highlight: [0, 0, 0, 0],
-  dim: 0,
-  activity: 0,
-});
+export function resolveShots(wide: boolean, reducedMotion: boolean): Shot[] {
+  return beats.map((beat) => {
+    const shot = wide ? beat.wide : beat.narrow;
+    return reducedMotion ? stillShot(shot, wide) : shot;
+  });
+}
+
+/** The beat the timeline is closest to: decides which copy is on screen. */
+export function activeBeat(time: number, windows: readonly BeatWindow[]): number {
+  let active = 0;
+  for (let i = 1; i < windows.length; i++) {
+    const midpoint = (windows[i - 1].depart + windows[i].arrive) / 2;
+    if (time >= midpoint) active = i;
+  }
+  return active;
+}
 
 /**
- * Converts a scroll offset into a story position, given the document space
- * centre of each stop's section. Linear between neighbouring centres.
+ * The beat whose copy should be on screen, or -1 while the camera is mid move.
+ * Copy leaves shortly after its beat departs and the next arrives shortly before
+ * its beat does, so the brain never travels across text.
  */
-export function positionFromScroll(viewportCentre: number, centres: readonly number[]): number {
-  if (centres.length < 2) return 0;
-  if (viewportCentre <= centres[0]) return 0;
-  for (let i = 0; i < centres.length - 1; i++) {
-    if (viewportCentre <= centres[i + 1]) {
-      return i + (viewportCentre - centres[i]) / (centres[i + 1] - centres[i]);
-    }
+export function copyBeat(time: number, windows: readonly BeatWindow[]): number {
+  for (let i = 0; i < windows.length; i++) {
+    const before = i === 0 ? 0 : (windows[i].arrive - windows[i - 1].depart) * 0.28;
+    const after = i === windows.length - 1 ? Infinity : (windows[i + 1].arrive - windows[i].depart) * 0.22;
+    if (time >= windows[i].arrive - before && time <= windows[i].depart + after) return i;
   }
-  return centres.length - 1;
+  return -1;
+}
+
+const hex = (value: string) => [1, 3, 5].map((i) => parseInt(value.slice(i, i + 2), 16));
+const mixHex = (a: string, b: string, t: number) => {
+  const [x, y] = [hex(a), hex(b)];
+  return `rgb(${x.map((c, i) => Math.round(c + (y[i] - c) * t)).join(" ")})`;
+};
+
+/** Page colours for the story at a given tone: 0 is paper, 1 is night. */
+export function toneColours(tone: number) {
+  return {
+    "--story-bg": mixHex("#f7f8f6", "#101a26", tone),
+    "--story-ink": mixHex("#172a3e", "#f7f8f6", tone),
+    "--story-body": mixHex("#3f5165", "#c7d0d8", tone),
+    "--story-faint": mixHex("#6b7c8d", "#9eaebb", tone),
+    "--story-rule": mixHex("#cfd5da", "#3a4654", tone),
+    "--story-skeleton": mixHex("#e9edf0", "#1b2836", tone),
+  } as const;
 }

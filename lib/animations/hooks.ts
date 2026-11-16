@@ -4,6 +4,11 @@ import { useEffect, useRef, useState, useSyncExternalStore, type RefObject } fro
 
 const QUERY = "(prefers-reduced-motion: reduce)";
 
+/** Reads a QA switch from the address bar, for example ?motion=reduce or ?webgl=off. */
+export function qaSwitch(name: string, value: string): boolean {
+  return typeof window !== "undefined" && new URLSearchParams(window.location.search).get(name) === value;
+}
+
 function subscribeReducedMotion(onChange: () => void) {
   const mq = window.matchMedia(QUERY);
   mq.addEventListener("change", onChange);
@@ -14,7 +19,7 @@ function subscribeReducedMotion(onChange: () => void) {
 export function useReducedMotion(): boolean {
   return useSyncExternalStore(
     subscribeReducedMotion,
-    () => window.matchMedia(QUERY).matches,
+    () => window.matchMedia(QUERY).matches || qaSwitch("motion", "reduce"),
     () => false,
   );
 }

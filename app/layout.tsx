@@ -33,7 +33,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html lang="en" className={`${manrope.variable} antialiased`}>
       <body className="min-h-screen">
         <noscript>
-          <style>{`.reveal{opacity:1;transform:none}.tagline-word{opacity:1}`}</style>
+          <style>{`.reveal{opacity:1;transform:none}.tagline-word{opacity:1}.story-track{height:auto!important;margin-top:0!important}.story-frame{position:static!important;height:auto!important}.beat-copy{position:static!important;opacity:1!important;transform:none!important;padding-block:48px}`}</style>
         </noscript>
         <a
           href="#main"

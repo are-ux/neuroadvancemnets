@@ -27,25 +27,34 @@ function useActiveSection() {
   return active;
 }
 
-/** True while any element marked data-nav-tone="dark" sits under the navigation. */
+/**
+ * True while an element marked data-nav-tone="dark" sits under the navigation.
+ * The attribute can change while an element stays in place (the brain story dims
+ * as it scrolls), so the hook also re-reads it when the story announces a change.
+ */
 function useDarkBackdrop() {
   const [dark, setDark] = useState(false);
   useEffect(() => {
-    const zones = Array.from(document.querySelectorAll('[data-nav-tone="dark"]'));
+    const zones = Array.from(document.querySelectorAll<HTMLElement>("[data-nav-tone]"));
     if (!zones.length) return;
-    const under = new Set<Element>();
+    const under = new Set<HTMLElement>();
+    const evaluate = () => setDark([...under].some((zone) => zone.dataset.navTone === "dark"));
     const io = new IntersectionObserver(
       (entries) => {
         for (const entry of entries) {
-          if (entry.isIntersecting) under.add(entry.target);
-          else under.delete(entry.target);
+          if (entry.isIntersecting) under.add(entry.target as HTMLElement);
+          else under.delete(entry.target as HTMLElement);
         }
-        setDark(under.size > 0);
+        evaluate();
       },
       { rootMargin: TONE_BAND_MARGIN },
     );
     zones.forEach((zone) => io.observe(zone));
-    return () => io.disconnect();
+    window.addEventListener("na:tone", evaluate);
+    return () => {
+      io.disconnect();
+      window.removeEventListener("na:tone", evaluate);
+    };
   }, []);
   return dark;
 }

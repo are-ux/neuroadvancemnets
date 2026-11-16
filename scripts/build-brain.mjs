@@ -274,6 +274,39 @@ function buildPaths() {
 }
 const paths = buildPaths();
 
+/* ------------------------------------------------------------------
+   Callout anchors.
+
+   One point per lobe on the lateral surface of the left hemisphere,
+   used by the page to attach annotation leaders. Each is a real mesh
+   vertex: on a gyral crown, well inside its lobe (away from the atlas
+   boundary), and as close as possible to a point pushed outward from
+   the lobe's centroid.
+------------------------------------------------------------------- */
+function buildAnchors() {
+  const outward = { frontal: [-1, 0.3, -0.15], parietal: [-0.9, 0.5, 0.1], temporal: [-1, -0.15, 0.05], occipital: [-0.65, 0.05, 0.75] };
+  const anchors = {};
+  LOBE_ORDER.forEach((name, li) => {
+    const c = stats[name].c.map((v) => v / stats[name].n);
+    const d = outward[name];
+    const dl = Math.hypot(...d);
+    const aim = c.map((v, k) => v + (d[k] / dl) * 0.6);
+    let best = -1, bestDist = Infinity;
+    for (let v = 0; v < nTotal / 2; v++) {
+      if (lobeOf[v] !== li || uv[v * 2] > 0.3 || color[v * 4 + li] < 250) continue;
+      const dist = Math.hypot(position[v * 3] - aim[0], position[v * 3 + 1] - aim[1], position[v * 3 + 2] - aim[2]);
+      if (dist < bestDist) { bestDist = dist; best = v; }
+    }
+    const r = (x) => Number(x.toFixed(4));
+    anchors[name] = {
+      position: [0, 1, 2].map((k) => r(position[best * 3 + k])),
+      normal: [0, 1, 2].map((k) => r(normal[best * 3 + k])),
+    };
+  });
+  return anchors;
+}
+const anchors = buildAnchors();
+
 const doc = new Document();
 doc.createExtension(KHRMeshQuantization).setRequired(true);
 doc.createExtension(EXTMeshoptCompression)
@@ -307,6 +340,8 @@ const glb = await io.writeBinary(doc);
 writeFileSync(join(out, "brain.glb"), glb);
 const pathsJson = JSON.stringify({ note: "Decorative surface paths. Not measured neural connections.", paths });
 writeFileSync(join(out, "brain-paths.json"), pathsJson);
+writeFileSync(join(root, "lib", "content", "brain-anchors.json"), JSON.stringify(anchors, null, 2) + "\n");
+console.log("anchors", JSON.stringify(anchors));
 console.log(`paths ${paths.length}, points ${paths.reduce((n, p) => n + p.l.length, 0)}, json ${(pathsJson.length / 1024).toFixed(0)} KB`);
 
 console.log(`vertices ${nTotal}, triangles ${tTotal}, glb ${(glb.byteLength / 1024).toFixed(0)} KB`);

@@ -22,10 +22,10 @@ export const colors = {
  */
 export const brainPalette = {
   paper: {
-    gyrus: "#FBFDFF",
-    sulcus: "#4C8DC6",
-    shade: "#A6C4E6",
-    rim: "#1B68B0",
+    gyrus: "#F2F7FB",
+    sulcus: "#3B7BB8",
+    shade: "#92B3DA",
+    rim: "#165C9F",
     ghost: "#E9EEF2",
     lobe: "#49B4EC",
     edge: "#1669AE",
@@ -60,7 +60,8 @@ export const STORY_DESKTOP_MIN = 1024;
 
 /**
  * Band at the top of the viewport that decides the page tone under the navigation.
- * An element marked data-nav-tone="dark" that reaches this band turns the glass,
- * and the brain story, to their dark treatment at the same moment.
+ * Any element carrying data-nav-tone is watched; while one marked "dark" sits in this
+ * band the glass switches to its frosted treatment. The brain story flips its own
+ * attribute as it dims and announces the change with a "na:tone" event.
  */
 export const TONE_BAND_MARGIN = "0px 0px -88% 0px";

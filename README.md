@@ -53,13 +53,17 @@ Limits to know about:
 
 ### How the scroll story works
 
-- One persistent canvas sits in a sticky stage. Copy scrolls past in normal flow, so nothing is pinned with JavaScript.
-- `lib/animations/story-timeline.ts` maps one number, the story position, to the full 3D state (view, highlight, dimming, activity). Scrolling back replays the same frames.
-- The position is read from `window.scrollY` once per rendered frame. There is no scroll listener.
-- Chapter views are authored in `lib/content/brain-chapters.ts` as azimuth and elevation.
+- Four chapters across seven beats: cover, overview, frontal, temporal, parietal, occipital, complete.
+- Each beat is a shot (camera orientation, distance, framing, focus, emphasis, callouts, tone) in `lib/content/brain-chapters.ts`.
+- One GSAP timeline, scrubbed by ScrollTrigger, tweens a single shot object. The canvas reads it once per frame.
+- Pinned chapters use CSS sticky. Nothing is pinned with JavaScript.
+- Callouts project real surface anchors (`lib/content/brain-anchors.json`) through the live camera.
+- The brain is a custom shader with paper and night presets, plus a decorative activity layer.
 - Rendering pauses when the story leaves the viewport. Pixel ratio is capped at 1.75.
-- Reduced motion: the brain holds one lateral view and only the highlight changes. No sway, no activity shimmer.
-- Without WebGL: a static fallback shows and every chapter remains readable.
+- Reduced motion keeps one orientation and changes only emphasis and labels. Without WebGL a still is shown.
+- Preview either with `?motion=reduce` or `?webgl=off`.
+
+Details: `docs/stage-c-brain.md` and `docs/stage-d-story.md`.
 
 ## Placeholders and missing dependencies
 
