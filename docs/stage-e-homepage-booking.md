@@ -1,5 +1,7 @@
 # Stage E: editorial homepage and Calendly booking
 
+> Superseded in part: the calendar now lives on the homepage and `/consultations/book` redirects to it. See `stage-f-startup-and-homepage-booking.md`.
+
 Status: implemented, uncommitted, awaiting review. Stage D revision 2 is committed as `c259eb0`.
 
 ## Stage D finishing

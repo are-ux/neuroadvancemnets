@@ -12,13 +12,13 @@ export default function PrivacyPage() {
       </p>
       <h2 className="heading-6">What the site does today</h2>
       <p>
-        The signup forms ask for an email address only. They are not yet connected to a mailing service, so no
-        address is stored. The site does not ask for medical information.
+        The email signup forms are closed. They are not connected to a mailing service and do not collect or store
+        anything. The site does not ask for medical information.
       </p>
       <h2 className="heading-6">Consultation booking</h2>
       <p>
-        The booking page embeds a calendar from Calendly, a separate scheduling service. The calendar loads only on
-        that page. Details entered there go to Calendly and are handled under its privacy policy, and Calendly may
+        The booking section of the homepage embeds a calendar from Calendly, a separate scheduling service. It loads
+        only when a visitor reaches or asks for that section. Details entered there go to Calendly and are handled under its privacy policy, and Calendly may
         set cookies. The calendar is for arranging a time only and should not be used to send medical information.
       </p>
       <h2 className="heading-6">Still to be supplied</h2>

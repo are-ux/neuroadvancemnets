@@ -97,6 +97,8 @@ export function BrainStory() {
   // Which beat's copy is showing: -1 while the camera is between beats.
   const [copy, setCopy] = useState(0);
   const [inView, setInView] = useState(true);
+  // True until the first scroll away from the cover: the still image is only valid there.
+  const [atCover, setAtCover] = useState(true);
   const reducedMotion = useReducedMotion();
 
   useEffect(() => {
@@ -107,7 +109,7 @@ export function BrainStory() {
 
     let timeline: gsap.core.Timeline | null = null;
     let windows: BeatWindow[] = [];
-    const applied = { tone: -1, hero: -1, beat: -1, copy: -2, dark: false };
+    const applied = { tone: -1, hero: -1, beat: -1, copy: -2, dark: false, cover: true };
 
     /** Everything outside the canvas that follows the timeline. Each write happens only on change. */
     const apply = () => {
@@ -134,6 +136,11 @@ export function BrainStory() {
       if (now !== applied.beat) {
         applied.beat = now;
         setBeat(now);
+      }
+      const cover = (timeline?.time() ?? 0) < 24;
+      if (cover !== applied.cover) {
+        applied.cover = cover;
+        setAtCover(cover);
       }
       const showing = copyBeat(timeline?.time() ?? 0, windows);
       if (showing !== applied.copy) {
@@ -248,7 +255,7 @@ export function BrainStory() {
       <div className="pointer-events-none absolute inset-0">
         <div className="sticky top-0 h-lvh overflow-hidden">
           <div className="story-bg absolute inset-x-0 top-0 h-[46%] lg:hidden" />
-          <BrainStage shot={shot} beat={beat} active={inView} reducedMotion={reducedMotion} />
+          <BrainStage shot={shot} beat={beat} atCover={atCover} active={inView} reducedMotion={reducedMotion} />
 
           <nav aria-label="Brain chapters" className="pointer-events-auto absolute right-8 top-1/2 hidden -translate-y-1/2 xl:block">
             <ol className="flex flex-col items-end gap-3">

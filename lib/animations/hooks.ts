@@ -4,9 +4,14 @@ import { useEffect, useRef, useState, useSyncExternalStore, type RefObject } fro
 
 const QUERY = "(prefers-reduced-motion: reduce)";
 
-/** Reads a QA switch from the address bar, for example ?motion=reduce or ?webgl=off. */
+/**
+ * Reads a QA switch from the address bar, for example ?motion=reduce or ?webgl=off.
+ * Switches work in development, and in a production build only when
+ * NEXT_PUBLIC_QA_SWITCHES is "true". The public site should leave that unset.
+ */
+const QA_ENABLED = process.env.NODE_ENV !== "production" || process.env.NEXT_PUBLIC_QA_SWITCHES === "true";
 export function qaSwitch(name: string, value: string): boolean {
-  return typeof window !== "undefined" && new URLSearchParams(window.location.search).get(name) === value;
+  return QA_ENABLED && typeof window !== "undefined" && new URLSearchParams(window.location.search).get(name) === value;
 }
 
 function subscribeReducedMotion(onChange: () => void) {

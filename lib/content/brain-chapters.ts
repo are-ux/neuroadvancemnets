@@ -240,7 +240,7 @@ export function stillShot(shot: Shot, _wide: boolean): Shot {
     azimuth: cover ? shot.azimuth : -92,
     elevation: cover ? shot.elevation : 8,
     distance: 6.2,
-    zoom: Math.min(shot.zoom, 1.02),
+    zoom: cover ? shot.zoom : Math.min(shot.zoom, 1.02),
     fx: 0, fy: 0, fz: 0,
     activity: 0,
   };

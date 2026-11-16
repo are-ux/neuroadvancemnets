@@ -6,7 +6,13 @@ import { useCallback, useEffect, useRef, useState, type CSSProperties, type RefO
 import { qaSwitch } from "@/lib/animations/hooks";
 import { beats, LOBE_CHANNELS, lobeNames, type Shot } from "@/lib/content/brain-chapters";
 
-const BrainCanvas = dynamic(() => import("./brain-canvas"), { ssr: false });
+/**
+ * The 3D code is a separate chunk. Its download starts as soon as this module runs in
+ * the browser, instead of waiting for the component to mount and ask for it.
+ */
+const loadCanvas = () => import("./brain-canvas");
+const BrainCanvas = dynamic(loadCanvas, { ssr: false });
+if (typeof window !== "undefined") void loadCanvas();
 
 /** DOM nodes of the anatomical callouts. The 3D scene positions them every frame, without React. */
 export type CalloutNodes = {
@@ -19,6 +25,8 @@ type Props = {
   shot: RefObject<Shot>;
   /** Active beat, used to pick the matching still when the 3D renderer is unavailable. */
   beat: number;
+  /** True while the page is still at the cover, before the brain has started to move. */
+  atCover: boolean;
   active: boolean;
   reducedMotion: boolean;
 };
@@ -44,9 +52,39 @@ const stillAlt: Record<string, string> = {
 };
 
 /**
- * Static alternative to the 3D scene: one still per beat, captured from the same
- * renderer, placed where the brain sits in that beat's composition. Only the still
- * for the current beat, and any already seen, is requested.
+ * The cover brain as an image, shown from the first paint.
+ *
+ * It is a capture of the live scene at rest on the cover, and it is placed with the same
+ * rules the 3D scene uses to place the model (see brain-model.tsx), so the live brain can
+ * fade in on top of it without anything appearing to move:
+ *
+ *   wide    brain size follows viewport width up to a cap, centred 2% right and 9% above the middle
+ *   narrow  brain size follows viewport width up to a cap, centred 23.5% above the middle
+ *
+ * The capture covers 60% of the canvas width at 4:3 on a wide screen. The narrow sizes are
+ * that figure scaled by how much larger the model is drawn there.
+ */
+function CoverStill({ visible }: { visible: boolean }) {
+  return (
+    <Image
+      src="/models/stills/hero.webp"
+      alt=""
+      width={1000}
+      height={750}
+      preload
+      fetchPriority="high"
+      unoptimized
+      className={`pointer-events-none absolute left-1/2 top-[26.5%] aspect-[4/3] h-auto w-[min(105%,61.8lvh)] max-w-none -translate-x-1/2 -translate-y-1/2 transition-opacity duration-300 ease-settle sm:w-[min(105%,74.5lvh)] lg:left-[52%] lg:top-[41%] lg:w-[min(60%,110.9lvh)] ${
+        visible ? "opacity-100" : "opacity-0"
+      }`}
+    />
+  );
+}
+
+/**
+ * Static alternative to the 3D scene for the anatomy beats: one still per beat, captured
+ * from the same renderer, placed where the brain sits in that beat's composition. A still
+ * is requested only once its beat is reached. The cover uses CoverStill.
  */
 function BrainStills({ beat }: { beat: number }) {
   const [seen, setSeen] = useState<number[]>([beat]);
@@ -55,7 +93,7 @@ function BrainStills({ beat }: { beat: number }) {
   return (
     <>
       {beats.map((b, i) => {
-        if (!seen.includes(i)) return null;
+        if (i === 0 || !seen.includes(i)) return null;
         const place = { "--x": `${b.wide.x * 100}%`, "--y": `${b.wide.y * 100}%` } as CSSProperties;
         return (
           <figure
@@ -76,22 +114,33 @@ function BrainStills({ beat }: { beat: number }) {
 }
 
 /**
- * Owns everything around the 3D canvas: capability check, lazy loading, the
- * loading placeholder, the callout layer, and the static alternative shown
- * when WebGL is unavailable.
+ * Owns everything around the 3D canvas: the image shown from first paint, the capability
+ * check, the hand over to the live scene, the callout layer, and the static alternative
+ * shown when WebGL is unavailable.
  */
-export function BrainStage({ shot, beat, active, reducedMotion }: Props) {
+export function BrainStage({ shot, beat, atCover, active, reducedMotion }: Props) {
   const [support, setSupport] = useState<"checking" | "webgl" | "none">("checking");
-  const [ready, setReady] = useState(false);
-  const onReady = useCallback(() => setReady(true), []);
+  // "live" once the 3D scene has drawn a real frame. "settled" once it has finished fading in.
+  const [live, setLive] = useState(false);
+  const [settled, setSettled] = useState(false);
+  const onReady = useCallback(() => setLive(true), []);
   const callouts = useRef<CalloutNodes>({ lines: [], dots: [], labels: [] });
 
   useEffect(() => {
+    performance.mark("na:stage-mounted");
     setSupport(hasWebGL() ? "webgl" : "none");
   }, []);
 
-  // Same anchor as the 3D brain on the cover: centred, upper area.
-  const anchor = "absolute left-1/2 top-[26%] -translate-x-1/2 -translate-y-1/2 lg:top-[42%]";
+  useEffect(() => {
+    if (!live) return;
+    performance.mark("na:live-visible");
+    // The image stays until the live scene is fully opaque over it, then it is removed.
+    const timer = window.setTimeout(() => setSettled(true), 450);
+    return () => window.clearTimeout(timer);
+  }, [live]);
+
+  // The image is the cover pose. It is only correct while the page is at the cover.
+  const showStill = atCover && (support === "none" || !settled);
 
   return (
     <div
@@ -99,8 +148,10 @@ export function BrainStage({ shot, beat, active, reducedMotion }: Props) {
       role="img"
       aria-label="3D model of the human cerebral cortex. As you scroll, the view moves across the frontal, temporal, parietal, and occipital lobes, lighting and naming each in turn."
     >
+      {(support !== "webgl" || !settled) && <CoverStill visible={showStill} />}
+
       {support === "webgl" && (
-        <div className={`absolute inset-0 transition-opacity duration-700 ease-settle ${ready ? "opacity-100" : "opacity-0"}`}>
+        <div className={`absolute inset-0 transition-opacity duration-300 ease-settle ${live ? "opacity-100" : "opacity-0"}`}>
           <BrainCanvas shot={shot} callouts={callouts} active={active} reducedMotion={reducedMotion} onReady={onReady} />
 
           {/*
@@ -142,13 +193,6 @@ export function BrainStage({ shot, beat, active, reducedMotion }: Props) {
               {lobeNames[lobe]}
             </span>
           ))}
-        </div>
-      )}
-
-      {support !== "none" && !ready && (
-        <div className={`${anchor} flex flex-col items-center gap-4`}>
-          <div className="skeleton story-skeleton h-40 w-56 rounded-full lg:h-72 lg:w-96" />
-          <p className="caption-2 story-faint">Loading the 3D brain</p>
         </div>
       )}
 

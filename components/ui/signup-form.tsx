@@ -2,6 +2,7 @@
 
 import { useId, useState, type FormEvent } from "react";
 import { buttonClass } from "@/components/ui/button";
+import { signups } from "@/lib/content/site";
 
 type Props = {
   /** Which list the address is for. Sent to the API so one endpoint can serve every form. */
@@ -20,18 +21,26 @@ type Status =
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
 /**
- * Email signup with client side validation and a real request to /api/subscribe.
- * The endpoint is an integration placeholder: it validates but stores nothing,
- * and the confirmation says so plainly.
+ * Email signup.
+ *
+ * No mailing provider is connected yet, so by default the form is shown closed:
+ * the field is disabled and it says plainly that signups are not open. It never
+ * reports success for an address that was not stored.
+ *
+ * Once a provider is wired into /api/subscribe and NEXT_PUBLIC_SIGNUPS_ENABLED is
+ * "true", the same form validates, submits, and confirms only when the server says
+ * the address was stored.
  */
 export function SignupForm({ list, submitLabel, tone = "light", className = "" }: Props) {
   const id = useId();
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<Status>({ kind: "idle" });
   const dark = tone === "dark";
+  const open = signups.enabled;
 
   async function onSubmit(event: FormEvent) {
     event.preventDefault();
+    if (!open) return;
     const value = email.trim();
     if (!value) return setStatus({ kind: "error", message: "Enter your email address." });
     if (!EMAIL.test(value)) return setStatus({ kind: "error", message: "That address looks incomplete. Check it and try again." });
@@ -43,9 +52,10 @@ export function SignupForm({ list, submitLabel, tone = "light", className = "" }
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: value, list }),
       });
-      if (!res.ok) {
-        const data = (await res.json().catch(() => null)) as { error?: string } | null;
-        throw new Error(data?.error ?? "The request failed. Try again in a moment.");
+      const data = (await res.json().catch(() => null)) as { stored?: boolean; error?: string } | null;
+      // Success means the server stored the address. Anything else is reported as a failure.
+      if (!res.ok || data?.stored !== true) {
+        throw new Error(data?.error ?? "Your address could not be saved. Try again in a moment.");
       }
       setStatus({ kind: "done", email: value });
       setEmail("");
@@ -77,7 +87,7 @@ export function SignupForm({ list, submitLabel, tone = "light", className = "" }
           name="email"
           autoComplete="email"
           inputMode="email"
-          placeholder="you@example.com"
+          placeholder={open ? "you@example.com" : "Not open yet"}
           value={email}
           onChange={(e) => {
             setEmail(e.target.value);
@@ -85,24 +95,21 @@ export function SignupForm({ list, submitLabel, tone = "light", className = "" }
           }}
           aria-invalid={invalid}
           aria-describedby={`${id}-status`}
-          disabled={loading}
-          className={`min-w-0 flex-1 rounded-lg bg-transparent px-2 py-2 body-3 ${
+          disabled={!open || loading}
+          className={`min-w-0 flex-1 rounded-lg bg-transparent px-2 py-2 body-3 disabled:cursor-not-allowed ${
             dark ? "text-white placeholder:text-ice/50" : "text-navy placeholder:text-slate/50"
           }`}
         />
-        <button type="submit" disabled={loading} className={buttonClass(dark ? "inverse" : "primary", "md")}>
+        <button type="submit" disabled={!open || loading} className={buttonClass(dark ? "inverse" : "primary", "md")}>
           {loading ? <span className="skeleton">Sending</span> : submitLabel}
         </button>
       </div>
       <p id={`${id}-status`} role="status" aria-live="polite" className={`min-h-10 caption-2 ${dark ? "text-ice/80" : "text-slate/80"}`}>
-        {status.kind === "error" && <span className={dark ? "text-white" : "text-navy"}>{status.message}</span>}
-        {status.kind === "done" && (
-          <span className={dark ? "text-white" : "text-navy"}>
-            Request received. Signups are not connected to a mailing service yet, so {status.email} has not been
-            stored.
-          </span>
+        {!open && "Email signups are not open yet. This form does not collect or store anything."}
+        {open && status.kind === "error" && <span className={dark ? "text-white" : "text-navy"}>{status.message}</span>}
+        {open && status.kind === "done" && (
+          <span className={dark ? "text-white" : "text-navy"}>You are on the list. Updates will go to {status.email}.</span>
         )}
-        {(status.kind === "idle" || status.kind === "loading") && "Integration placeholder. No address is stored yet."}
       </p>
     </form>
   );

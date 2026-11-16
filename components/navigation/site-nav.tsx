@@ -74,7 +74,7 @@ function Logo({ height }: { height: 28 | 32 }) {
       width={width}
       height={height}
       quality={95}
-      priority
+      preload
       style={{ width, height }}
     />
   );
@@ -84,7 +84,9 @@ export function SiteNav() {
   const [open, setOpen] = useState(false);
   const active = useActiveSection();
   const dark = useDarkBackdrop();
-  const onBookingPage = usePathname() === consultationLink.href;
+  // On the homepage a bare anchor lets the browser scroll in place, with its own history and focus handling.
+  const onHome = usePathname() === "/";
+  const bookingHref = onHome ? `#${consultationLink.section}` : consultationLink.href;
 
   useEffect(() => {
     if (!open) return;
@@ -146,14 +148,14 @@ export function SiteNav() {
           </ul>
 
           <div className="flex items-center gap-2 justify-self-end">
-            <Link
-              href={consultationLink.href}
-              aria-current={onBookingPage ? "page" : active === consultationLink.section ? "true" : undefined}
+            <a
+              href={bookingHref}
+              aria-current={active === consultationLink.section ? "true" : undefined}
               className={buttonClass("primary", "sm", "hidden sm:inline-flex")}
               onClick={() => setOpen(false)}
             >
               {consultationLink.label}
-            </Link>
+            </a>
             <button
               type="button"
               aria-expanded={open}
@@ -194,9 +196,9 @@ export function SiteNav() {
           ))}
         </ul>
         <div className="menu-link" style={{ "--link-delay": `${Math.min(navItems.length * 60, 400)}ms` } as CSSProperties}>
-          <Link href={consultationLink.href} onClick={() => setOpen(false)} className={buttonClass("primary", "md", "w-full")}>
+          <a href={bookingHref} onClick={() => setOpen(false)} className={buttonClass("primary", "md", "w-full")}>
             {consultationLink.label}
-          </Link>
+          </a>
         </div>
       </div>
     </header>

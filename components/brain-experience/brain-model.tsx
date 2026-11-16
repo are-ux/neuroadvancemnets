@@ -76,12 +76,19 @@ export function BrainModel({ shot, callouts, reducedMotion, onReady }: Props) {
     [materials],
   );
 
+  const frames = useRef(0);
+  const [firstFrame, setFirstFrame] = useState(false);
+
   // The activity layer is not needed for first paint, so its data loads after the brain is on screen.
   const [ribbons, setRibbons] = useState<THREE.BufferGeometry | null>(null);
   useEffect(() => {
+    if (!firstFrame) return;
     let cancelled = false;
     let built: THREE.BufferGeometry | null = null;
-    fetch(BRAIN_PATHS_URL)
+    const idle = window.requestIdleCallback ?? ((run: () => void) => window.setTimeout(run, 200));
+    idle(() => {
+      if (cancelled) return;
+      fetch(BRAIN_PATHS_URL)
       .then((res) => (res.ok ? res.json() : Promise.reject(new Error(String(res.status)))))
       .then((data) => {
         if (cancelled) return;
@@ -91,31 +98,36 @@ export function BrainModel({ shot, callouts, reducedMotion, onReady }: Props) {
       .catch(() => {
         // The brain is complete without this layer. Leave it out if the file cannot be read.
       });
+    });
     return () => {
       cancelled = true;
       built?.dispose();
     };
-  }, []);
+  }, [firstFrame]);
 
-  const intro = useRef(0);
   const scratch = useMemo(
     () => ({ point: new THREE.Vector3(), normal: new THREE.Vector3(), toCamera: new THREE.Vector3(), shown: [0, 0, 0, 0], widths: [0, 0, 0, 0] }),
     [],
   );
 
   useEffect(() => {
-    onReady();
+    performance.mark("na:model-ready");
     invalidate();
-  }, [onReady, invalidate]);
+  }, [invalidate]);
 
-  useFrame((state, delta) => {
+
+  useFrame((state) => {
+    // By the second call the first frame has been drawn: only then is the scene shown.
+    if (frames.current === 0) performance.mark("na:frame-start");
+    if (frames.current < 2 && ++frames.current === 2) {
+      performance.mark("na:first-frame");
+      onReady();
+      setFirstFrame(true);
+    }
     const s = shot.current;
     if (!s || !anchor.current || !tilt.current || !turn.current || !pivot.current) return;
-    const dt = Math.min(delta, 0.1);
     const camera = state.camera as THREE.PerspectiveCamera;
     const { width, height } = state.size;
-
-    intro.current += (1 - intro.current) * (reducedMotion ? 1 : 1 - Math.exp(-1.6 * dt));
 
     // Camera: distance sets perspective. Framing and size are handled below so they stay as authored.
     camera.position.set(0, 0, s.distance);
@@ -131,7 +143,7 @@ export function BrainModel({ shot, callouts, reducedMotion, onReady }: Props) {
     // Narrow layouts: phones are limited by width, portrait tablets get a larger brain to fill their taller band.
     const tablet = window.innerWidth >= 640;
     const fit = wide ? Math.min(1.32, referenceW * 0.215) : Math.min(tablet ? 0.94 : 0.78, referenceW * 0.4);
-    const scale = fit * s.zoom * (s.distance / REFERENCE_DISTANCE) * (0.95 + 0.05 * intro.current);
+    const scale = fit * s.zoom * (s.distance / REFERENCE_DISTANCE);
     const x = viewW * s.x;
     const y = viewH * s.y;
     anchor.current.position.set(x, y, 0);
@@ -140,8 +152,8 @@ export function BrainModel({ shot, callouts, reducedMotion, onReady }: Props) {
     // A slow, small drift keeps the object alive without ever reading as spinning.
     const t = state.clock.elapsedTime;
     const drift = reducedMotion ? 0 : 1;
-    const azimuth = s.azimuth + Math.sin(t * 0.22) * 1.6 * drift - (1 - intro.current) * 10;
-    const elevation = s.elevation + Math.sin(t * 0.17 + 1.3) * 0.8 * drift;
+    const azimuth = s.azimuth + Math.sin(t * 0.22) * 1.6 * drift;
+    const elevation = s.elevation + Math.sin(t * 0.17) * 0.8 * drift;
     // The framing point sits off the camera axis, which would skew the view by a few degrees.
     // Turning back by that angle keeps each shot at its authored anatomical view.
     turn.current.rotation.y = -azimuth * DEG - Math.atan2(x, s.distance);
@@ -174,7 +186,7 @@ export function BrainModel({ shot, callouts, reducedMotion, onReady }: Props) {
       scratch.toCamera.copy(camera.position).sub(scratch.point).normalize();
       // An anchor that turns away from the camera loses its callout instead of pointing through the brain.
       const facing = smooth(0.05, 0.32, scratch.normal.dot(scratch.toCamera));
-      const visible = Math.round(wanted[i] * facing * intro.current * 50) / 50;
+      const visible = Math.round(wanted[i] * facing * 50) / 50;
 
       if (visible === 0 && scratch.shown[i] === 0) continue;
       scratch.shown[i] = visible;

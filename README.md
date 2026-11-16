@@ -11,9 +11,11 @@ npm run build      # production build
 npm run typecheck
 ```
 
+Deployment: see `docs/aws-amplify-deployment.md`.
+
 Copy `.env.example` to `.env.local`. It sets the site address, the Calendly event, and whether booking is switched on.
 
-Booking is off unless `NEXT_PUBLIC_BOOKING_ENABLED=true`. Keep it off on the public site until consultations are authorized. See `docs/stage-e-homepage-booking.md`.
+Booking is off unless `NEXT_PUBLIC_BOOKING_ENABLED=true`. Keep it off on the public site until consultations are authorized. The calendar is the `#book-consultation` section at the foot of the homepage. See `docs/stage-f-startup-and-homepage-booking.md`.
 
 ## Structure
 

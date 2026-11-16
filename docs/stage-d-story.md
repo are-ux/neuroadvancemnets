@@ -2,7 +2,7 @@
 
 Status: revision 2, uncommitted, awaiting approval. Stage C is committed as `d4ca8bf`.
 
-Before and after screenshots and a stepped scroll recording are in `docs/review/`.
+Before and after screenshots and a stepped scroll recording were captured to `docs/review/`. That folder is kept locally and is no longer part of the repository.
 
 ## Why revision 1 was not good enough
 

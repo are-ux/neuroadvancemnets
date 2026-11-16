@@ -49,6 +49,22 @@ function loadCalendlyScript(): Promise<void> {
 
 type Status = "loading" | "ready" | "error";
 
+/** Calendar shaped placeholder, shown before Calendly is started and while it loads. */
+export function CalendarSkeleton() {
+  return (
+    <div role="status" className="absolute inset-0 z-10 flex flex-col gap-4 rounded-2xl bg-white p-6">
+      <span className="sr-only">Loading the booking calendar</span>
+      <div className="skeleton h-6 w-40 rounded-lg bg-ice" />
+      <div className="skeleton h-4 w-64 max-w-full rounded-lg bg-ice" />
+      <div className="mx-auto mt-4 grid w-full max-w-md grid-cols-7 gap-2">
+        {Array.from({ length: 28 }, (_, i) => (
+          <div key={i} className="skeleton aspect-square rounded-lg bg-ice" />
+        ))}
+      </div>
+    </div>
+  );
+}
+
 /**
  * Inline Calendly calendar, using Calendly's own initializer.
  *
@@ -106,18 +122,7 @@ export function CalendlyEmbed({ url }: { url: string }) {
 
   return (
     <div className="relative">
-      {status === "loading" && (
-        <div role="status" className="absolute inset-0 z-10 flex flex-col gap-4 rounded-2xl bg-white p-6">
-          <span className="sr-only">Loading the booking calendar</span>
-          <div className="skeleton h-6 w-40 rounded-lg bg-ice" />
-          <div className="skeleton h-4 w-64 max-w-full rounded-lg bg-ice" />
-          <div className="mt-4 grid grid-cols-7 gap-2">
-            {Array.from({ length: 28 }, (_, i) => (
-              <div key={i} className="skeleton aspect-square rounded-lg bg-ice" />
-            ))}
-          </div>
-        </div>
-      )}
+      {status === "loading" && <CalendarSkeleton />}
 
       {status === "error" && (
         <div role="alert" className="flex flex-col items-start gap-4 rounded-2xl bg-white p-6">

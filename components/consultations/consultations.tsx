@@ -1,13 +1,13 @@
 import { ArrowRight, WarningCircle } from "@phosphor-icons/react/dist/ssr";
-import { ButtonLink } from "@/components/ui/button";
+import { buttonClass } from "@/components/ui/button";
 import { Reveal } from "@/components/ui/reveal";
 import { SectionLabel } from "@/components/ui/section-label";
-import { booking } from "@/lib/content/booking";
+import { booking, BOOKING_ANCHOR } from "@/lib/content/booking";
 import { bookingSteps } from "@/lib/content/editorial";
 
 /**
  * Consultations on the homepage: a calm statement of where things stand and one
- * route to the booking page. Scheduling itself lives on /consultations/book.
+ * route to the calendar. Scheduling itself is the booking section at the foot of the homepage.
  * No appointment length, price, or type is stated here: the calendar shows them.
  */
 export function Consultations() {
@@ -21,13 +21,14 @@ export function Consultations() {
           </h2>
           <p className="max-w-[680px] body-3 text-slate lg:title-2">
             {booking.enabled
-              ? "Online neurological consultations with Amna Noor are scheduled through Calendly. Choose a time that suits you on the booking page."
-              : "Amna plans to offer online neurological consultations once she is professionally authorized to do so. Scheduling will open on the booking page."}
+              ? "Online neurological consultations with Amna Noor are scheduled through Calendly. Choose a time that suits you in the calendar at the foot of this page."
+              : "Amna plans to offer online neurological consultations once she is professionally authorized to do so. Scheduling will open at the foot of this page."}
           </p>
-          <ButtonLink href={booking.route} className="mt-2">
-            {booking.enabled ? "Book a consultation" : "Go to the booking page"}
+          {/* A plain in page link: the browser scrolls to the calendar at the foot of this page. */}
+          <a href={`#${BOOKING_ANCHOR}`} className={buttonClass("primary", "md", "mt-2")}>
+            {booking.enabled ? "Book a consultation" : "See booking"}
             <ArrowRight aria-hidden="true" weight="bold" className="size-4" />
-          </ButtonLink>
+          </a>
         </Reveal>
 
         <Reveal delay={90} className="flex flex-col gap-6 lg:col-span-5 lg:col-start-8">

@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { InstagramLogo, LinkedinLogo, XLogo, YoutubeLogo } from "@phosphor-icons/react/dist/ssr";
+import { EnvelopeSimple, InstagramLogo, LinkedinLogo, Phone, XLogo, YoutubeLogo } from "@phosphor-icons/react/dist/ssr";
 import { booking } from "@/lib/content/booking";
 import { legalLinks, navItems, site, socialLinks } from "@/lib/content/site";
 
@@ -9,18 +9,19 @@ const linkClass = "rounded-lg body-6 text-slate transition-colors motion-hover h
 const headingClass = "caption-1 text-navy";
 
 /**
- * Footer. Social profiles and contact details appear only once they are configured
- * in lib/content/site.ts: nothing is shown as a placeholder for a link that does not exist.
+ * Footer. Contact details come from lib/content/site.ts. Social profiles appear only
+ * once they are configured there: nothing is shown for a link that does not exist.
  */
 export function SiteFooter() {
   const socials = socialLinks.filter((social) => social.href);
+  const { email, phone } = site.contact;
 
   return (
     <footer className="bg-white">
       <div className="shell">
         <div aria-hidden="true" className="h-0.5 bg-navy" />
         <div className="grid gap-10 py-12 lg:grid-cols-12 lg:gap-8 lg:py-16">
-          <div className="flex flex-col items-start gap-4 lg:col-span-5">
+          <div className="flex flex-col items-start gap-6 lg:col-span-5">
             <Link href="/#home" aria-label="NeuroAdvancements home" className="rounded-lg">
               <Image src="/brand/logo.png" alt="NeuroAdvancements" width={177} height={36} quality={95} style={{ width: 177, height: 36 }} />
             </Link>
@@ -28,6 +29,27 @@ export function SiteFooter() {
               Neuroscience education, neurotechnology, and a weekly editorial on advances in neurology. Led by{" "}
               {site.founder}.
             </p>
+
+            <address className="flex flex-col gap-3">
+              <p className={headingClass}>Contact</p>
+              <ul className="flex flex-col gap-2">
+                <li>
+                  <a href={`mailto:${email}`} className={`${linkClass} inline-flex items-center gap-2 break-all`}>
+                    <EnvelopeSimple aria-hidden="true" className="size-5 shrink-0 text-navy" />
+                    <span className="sr-only">Email: </span>
+                    {email}
+                  </a>
+                </li>
+                <li>
+                  <a href={`tel:${phone.tel}`} className={`${linkClass} inline-flex items-center gap-2 whitespace-nowrap`}>
+                    <Phone aria-hidden="true" className="size-5 shrink-0 text-navy" />
+                    <span className="sr-only">Phone: </span>
+                    {phone.display}
+                  </a>
+                </li>
+              </ul>
+            </address>
+
             {socials.length > 0 && (
               <ul className="flex gap-2" aria-label="Social profiles">
                 {socials.map((social) => {
@@ -76,13 +98,6 @@ export function SiteFooter() {
                     Newsletter
                   </Link>
                 </li>
-                {site.contactEmail && (
-                  <li>
-                    <a href={`mailto:${site.contactEmail}`} className={linkClass}>
-                      {site.contactEmail}
-                    </a>
-                  </li>
-                )}
               </ul>
             </div>
             <div className="flex flex-col gap-3">

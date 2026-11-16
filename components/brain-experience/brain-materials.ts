@@ -126,7 +126,16 @@ void main() {
  */
 export function createShellMaterials(shared: BrainUniforms) {
   const p = brainPalette;
-  const depth = new THREE.MeshBasicMaterial({ colorWrite: false });
+  // Depth only: a minimal program, which compiles faster than a built in material.
+  const depth = new THREE.ShaderMaterial({
+    // The position must be computed exactly as the shell computes it. Any difference in the
+    // order of operations changes the depth by a rounding error, and the shell then fails its
+    // depth test in scattered pixels.
+    vertexShader: "void main() { vec4 mv = modelViewMatrix * vec4(position, 1.0); gl_Position = projectionMatrix * mv; }",
+    fragmentShader: "void main() { gl_FragColor = vec4(0.0); }",
+    colorWrite: false,
+    toneMapped: false,
+  });
   const shell = new THREE.ShaderMaterial({
     vertexShader: shellVertex,
     fragmentShader: shellFragment,
