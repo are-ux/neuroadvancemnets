@@ -48,7 +48,8 @@ Three ways forward, smallest first:
 | Route | Kind |
 |---|---|
 | `/`, `/privacy`, `/terms`, `/medical-disclaimer`, six `/neurobytes/*` pages, 404 | Prerendered static |
-| `/robots.txt`, `/sitemap.xml`, `/icon.png`, `/opengraph-image` | Prerendered static |
+| `/robots.txt`, `/sitemap.xml`, `/icon.png` | Prerendered static |
+| `/images/neuroadvancements-og.png` | Static file: the social sharing preview image |
 | `/api/subscribe` | Server route (always answers 503 until a mailing provider is connected) |
 | `/consultations/book` | 307 redirect to `/#book-consultation`, from `next.config.ts` |
 
@@ -119,7 +120,7 @@ All four are read at **build time** and compiled into the pages. Changing one re
 
 | Variable | Production value | Notes |
 |---|---|---|
-| `NEXT_PUBLIC_SITE_URL` | The site's final address, with `https://` and no trailing slash | **Required.** Canonical link, social image, `robots.txt`, and `sitemap.xml` are built from it. If unset they point at `http://localhost:3000`. |
+| `NEXT_PUBLIC_SITE_URL` | The site's final address, with `https://` and no trailing slash | **Required once a custom domain is attached.** Canonical link, social preview image, `robots.txt`, and `sitemap.xml` are built from it. If unset on Amplify, `next.config.ts` falls back to the branch's own Amplify address (`https://<branch>.<app id>.amplifyapp.com`), never localhost. |
 | `NEXT_PUBLIC_CALENDLY_EVENT_URL` | `https://calendly.com/neuroadvancements/30min` | Used only when booking is on. |
 | `NEXT_PUBLIC_BOOKING_ENABLED` | Leave unset or `false` | Set to `true` only after professional authorization and privacy arrangements are confirmed. While off, the booking section reads "Not yet open" and Calendly is never loaded. |
 | `NEXT_PUBLIC_SIGNUPS_ENABLED` | Leave unset or `false` | Email signup forms stay closed until a mailing provider is connected in `app/api/subscribe/route.ts`. |

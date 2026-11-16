@@ -19,11 +19,17 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     siteName: site.name,
-    title: site.title,
-    description: site.description,
+    title: site.social.title,
+    description: site.social.description,
     url: "/",
+    images: [site.social.image],
   },
-  twitter: { card: "summary_large_image", title: site.title, description: site.description },
+  twitter: {
+    card: "summary_large_image",
+    title: site.social.title,
+    description: site.social.description,
+    images: [site.social.image],
+  },
 };
 
 export const viewport: Viewport = { themeColor: "#f7f8f6" };

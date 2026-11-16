@@ -6,6 +6,19 @@ export const site = {
     "Neuroscience education, emerging neurotechnology, and a weekly editorial on advances in neurology, led by Amna Noor.",
   /** Set NEXT_PUBLIC_SITE_URL in production so social tags resolve to absolute URLs. */
   url: process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000",
+  /** What a shared link shows on social platforms. The image is the official preview, 1200 by 630. */
+  social: {
+    title: "NeuroAdvancements | Understanding the Brain. Exploring What's Next.",
+    description:
+      "Explore neuroscience, neurotechnology, NeuroBytes, weekly neurology insights, and online consultation information at NeuroAdvancements.",
+    image: {
+      url: "/images/neuroadvancements-og.png",
+      width: 1200,
+      height: 630,
+      type: "image/png",
+      alt: "NeuroAdvancements, a digital neuroscience hub featuring a luminous brain illustration and the headline Understanding the Brain. Exploring What's Next.",
+    },
+  },
   /** Official contact details, confirmed by the owner. Shown in the footer. */
   contact: {
     email: "neuroadvancements@gmail.com",
